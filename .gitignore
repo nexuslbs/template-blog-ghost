@@ -1,0 +1,26 @@
+# Real environment file (holds the DB secret path and owner bootstrap values).
+.env
+.env.*
+!.env.example
+
+# Secret material.
+secrets/
+runtime/
+
+# Backups and dumps (contain site data and credentials).
+backups/
+*.sql
+*.sql.gz
+*.dump
+
+# Local data / mounted content.
+data/
+content/
+
+# Compose overrides are per-host.
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Scratch.
+*.log
+.DS_Store

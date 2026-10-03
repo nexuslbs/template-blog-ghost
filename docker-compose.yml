@@ -1,0 +1,102 @@
+# Minimal reproducible Ghost (blog) stack.
+#
+# Official images, PINNED (never `latest`):
+#   ghost:6.67.0-alpine   mysql:8.0.44
+# Prior art: the official TryGhost/ghost-docker repo (compose.yml, .env.example,
+# scripts/migrate.sh). This file adapts it; it does not invent mechanisms.
+#
+# Configuration is passed as __-nested environment variables. Every Ghost config
+# value can be overridden that way, e.g. database__connection__host=db.
+# Ghost >= 6.58.0 supports the _FILE suffix for nested keys, so the DB password
+# is read from /run/secrets/ghost_db_secret instead of living in .env.
+# Never set both `database__connection__password` and
+# `database__connection__password_FILE`: Ghost refuses to start.
+#
+# Reproducible lifecycle: scripts/*.sh, documented in docs/RUNBOOK.md.
+
+name: ${COMPOSE_PROJECT_NAME:-template-blog-ghost}
+
+services:
+  db:
+    image: mysql:8.0.44
+    restart: unless-stopped
+    environment:
+      # The official mysql image reads the root password from a file when the
+      # *_FILE form is used. The same file feeds Ghost (see secrets below).
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/ghost_db_secret
+      MYSQL_DATABASE: ghost
+    volumes:
+      - db-data:/var/lib/mysql
+    secrets:
+      - ghost_db_secret
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping --silent -h 127.0.0.1 -uroot -p"$$(cat /run/secrets/ghost_db_secret)"
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks:
+      - ghostnet
+
+  ghost:
+    image: ghost:6.67.0-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${GHOST_BIND_ADDR:-127.0.0.1}:${GHOST_PORT:-2368}:2368"
+    environment:
+      NODE_ENV: production
+      url: "${GHOST_URL:?GHOST_URL must be set (copy .env.example to .env)}"
+      server__host: 0.0.0.0
+      server__port: "2368"
+      database__client: mysql
+      database__connection__host: db
+      database__connection__port: "3306"
+      database__connection__user: root
+      database__connection__database: ghost
+      # _FILE form (Ghost >= 6.58.0). Do NOT also set the non-_FILE key.
+      database__connection__password_FILE: /run/secrets/ghost_db_secret
+      mail__transport: ${GHOST_MAIL_TRANSPORT:-Direct}
+      logging__transports: '["stdout"]'
+    volumes:
+      - ghost-content:/var/lib/ghost/content
+      # Ghost reads /var/lib/ghost/config.production.json. The committed file
+      # carries no secret; the nested env vars above override its values.
+      - ./config/config.production.json:/var/lib/ghost/config.production.json:ro
+    secrets:
+      - ghost_db_secret
+    healthcheck:
+      # node is guaranteed in the official image; fetch is global in Node 22.
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:2368/ghost/api/admin/site/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+    networks:
+      - ghostnet
+
+# Volume and network names are derived from the Compose project name (set with
+# `-p`); they are deliberately NOT built from ${COMPOSE_PROJECT_NAME} here,
+# because an ambient value in the operator's shell would then leak into the
+# resource names. scripts/lib.sh pins `-p` and refuses the protected project.
+volumes:
+  db-data:
+  ghost-content:
+
+secrets:
+  # File source, resolved relative to this compose file. Real value lives in
+  # ./secrets/ (gitignored); .env only points at the file.
+  ghost_db_secret:
+    file: ${MYSQL_ROOT_PASSWORD_FILE:-./secrets/mysql_root_password.txt}
+
+networks:
+  ghostnet:
+    driver: bridge

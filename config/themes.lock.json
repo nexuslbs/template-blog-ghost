@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "themes": [
+    {
+      "name": "casper",
+      "version": "5.12.5",
+      "kind": "official",
+      "url": "https://github.com/TryGhost/Casper/archive/refs/tags/v5.12.5.zip",
+      "bytes": 406884,
+      "sha256": "6ac4bf2ab6c023682b611ce056f518a90ea4673b3f6f8900bf8794922b0c8d85",
+      "activate": true
+    }
+  ]
+}
