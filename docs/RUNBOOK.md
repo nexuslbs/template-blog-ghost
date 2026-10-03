@@ -37,8 +37,9 @@ chmod 444 secrets/mysql_root_password.txt  # readable by the unprivileged ghost 
 make up
 ```
 
-`make up` runs `docker compose up -d`, then waits for the `db` and `ghost`
-healthchecks before returning. First boot runs Ghost's own DB migrations
+`make up` runs `scripts/up.sh`, which starts the stack with the project name
+pinned from `.env` and then waits for the `db` and `ghost` healthchecks before
+returning. First boot runs Ghost's own DB migrations
 (`boot.js` -> `DatabaseStateManager.makeReady()`), which is why the ghost
 healthcheck has a long start period.
 
@@ -53,16 +54,18 @@ nested env vars in `docker-compose.yml`.
 | `COMPOSE_PROJECT_NAME` | Container/volume/network name prefix; one project per stack |
 | `GHOST_URL` | Public URL Ghost serves and uses for absolute links (no trailing slash) |
 | `GHOST_BIND_ADDR` / `GHOST_PORT` | Where the container port is published on the host |
-| `GHOST_MAIL_TRANSPORT` | `Direct` (no external mail) or `SMTP`; fill the SMTP knobs for production |
+| `GHOST_MAIL_TRANSPORT` | `Direct` (no external mail) or `SMTP`; this is the only mail knob the shipped compose file reads |
 | `MYSQL_ROOT_PASSWORD_FILE` | Host path to the DB password file used as a docker secret |
 | `GHOST_ADMIN_*` | First owner + blog title for `bootstrap.sh` (not read by Ghost) |
 | `GHOST_THEME_NAME` | Theme to apply; must exist in `config/themes.lock.json` |
 
-To route mail in production set `GHOST_MAIL_TRANSPORT=SMTP` and the
-`GHOST_MAIL_*` knobs. They map to `mail__transport`, `mail__options__host`,
+To route mail in production set `GHOST_MAIL_TRANSPORT=SMTP` and wire the
+`GHOST_MAIL_*` knobs into `docker-compose.yml`. `GHOST_MAIL_TRANSPORT` is the
+only one read today (as `mail__transport`); the other knobs in `.env.example`
+are placeholders. Add them under the `ghost` service as `mail__options__host`,
 `mail__options__port`, `mail__options__auth__user`,
-`mail__options__auth__pass` and `mail__from`. Extend `docker-compose.yml`
-accordingly; this is the only place a config change touches compose.
+`mail__options__auth__pass` and `mail__from`. This is the only place a config
+change touches compose.
 
 ## 3. Bootstrap (non-interactive, no browser)
 
@@ -133,9 +136,19 @@ make backup
 Per `docs.ghost.org/faq/manual-backup`, into `backups/<UTC timestamp>/`:
 
 ```sh
-docker compose exec -T db sh -c \
-  'exec mysqldump --no-tablespaces -uroot -p"$MYSQL_ROOT_PASSWORD" ghost'
-docker compose exec -T ghost tar czf - -C /var/lib/ghost/content .
+make backup        # or scripts/backup.sh
+```
+
+`scripts/backup.sh` runs these two commands against the project named by
+`COMPOSE_PROJECT_NAME` in `.env`, always with `-p` pinned. Never paste a bare
+`docker compose` here on a host that exports `COMPOSE_PROJECT_NAME` for another
+project: it would target that project instead (on this workstation host the
+ambient value is `omni-stack`, i.e. production).
+
+```sh
+docker compose -p <project> exec -T db sh -c \
+  'exec mysqldump --no-tablespaces -uroot -p"$(cat /run/secrets/ghost_db_secret)" ghost'
+docker compose -p <project> exec -T ghost tar czf - -C /var/lib/ghost/content .
 ```
 
 This stack supplies the password through a file secret, so the script reads it
@@ -146,22 +159,30 @@ That is the only deviation from the docs snippet, and it is required by the
 
 ## 7. Restore
 
+Precondition: the compose project exists with its named volumes. `scripts/restore.sh`
+brings `db` up and waits for its healthcheck itself, so restore works both right
+after `make down` (volumes kept) and after a fresh `make up` over empty volumes.
+Pass the backup directory as the `BACKUP` make variable, never as a make goal:
+
 ```sh
-make restore                 # newest backup
-scripts/restore.sh backups/20261003T210000Z
+make restore                          # newest backup
+make restore BACKUP=backups/<stamp>   # a specific backup
+scripts/restore.sh backups/<stamp>    # the same, without make
 ```
 
-Stops Ghost, restores the SQL dump into the `ghost` database, untars the content
-tree back into `/var/lib/ghost/content`, restarts Ghost, and waits for healthy.
-Ghost runs any needed migrations on boot.
+It ensures `db` is up and healthy, stops Ghost, restores the SQL dump into the
+`ghost` database, untars the content tree back into `/var/lib/ghost/content`,
+starts Ghost again, and waits for healthy. Ghost runs any needed migrations on
+boot.
 
 ## 8. Upgrade
 
 1. `make backup` (always).
 2. Change the `ghost` image tag in `docker-compose.yml` to the new pinned
    release (never `latest`).
-3. `make migrate` (`docker compose up -d --force-recreate ghost`); Ghost's
-   `boot.js` -> `DatabaseStateManager.makeReady()` applies pending migrations.
+3. `make migrate` (runs `scripts/migrate.sh`, which pins the project with `-p`
+   and then recreates ghost); Ghost's `boot.js` ->
+   `DatabaseStateManager.makeReady()` applies pending migrations.
 4. `make verify`.
 
 There is no official "migration" command to call separately in this image; the
@@ -171,12 +192,16 @@ read of the latest applied row from the `migrations` table (`name`, `version`,
 
 ## 9. Rollback
 
-Rollback is a data restore plus a tag pin, not a command Ghost offers:
+Rollback is a data restore plus a tag pin, not a command Ghost offers. Run these
+steps in this order; each is executable as written:
 
-1. Pin the previous `ghost` tag in `docker-compose.yml`.
-2. `make down` (keep volumes).
-3. Restore the pre-upgrade dump: `make restore backups/<pre-upgrade stamp>`.
-4. `make up` and `make verify`.
+1. Pin the previous `ghost` tag in `docker-compose.yml` (never `latest`).
+2. `make down` (keeps the named volumes).
+3. Restore the pre-upgrade dump:
+   `make restore BACKUP=backups/<pre-upgrade stamp>`. `scripts/restore.sh` brings
+   `db` up and waits for healthy by itself, so this works with the stack down;
+   it starts Ghost again at the end.
+4. `make up` (idempotent if step 3 already started Ghost) and `make verify`.
 
 Because the migration only moves forward, restoring the HTTP service without the
 matching database state is not supported by any official route. Keep the
@@ -218,3 +243,27 @@ and TLS at the published port.
   tag pin, as in section 9.
 * **No built-in TLS.** Put a reverse proxy in front of the published port; Ghost
   itself does not terminate TLS in this image.
+
+## 12. Human handover checklist (production publish is a human step)
+
+The agent prepares the artifact; a named human operator performs the production
+publish. Record that name in the deployment ticket and tick every item.
+
+* [ ] **DNS**: an A/AAAA record points the blog host (for example
+      `blog.example.com`) at the host that runs the stack.
+* [ ] **TLS**: a reverse proxy / TLS terminator sits in front of
+      `GHOST_BIND_ADDR:GHOST_PORT`, presents a valid certificate and forwards
+      `X-Forwarded-Proto: https`; `GHOST_URL` is the public `https://` URL.
+* [ ] **SMTP / mail**: either accept `GHOST_MAIL_TRANSPORT=Direct` (no password
+      reset mail) or wire the `GHOST_MAIL_*` values into `docker-compose.yml` as
+      `mail__options__*` and `mail__from` (section 2). Send a real test mail.
+* [ ] **Real owner**: `GHOST_ADMIN_EMAIL` / `GHOST_ADMIN_PASSWORD` name the real
+      owner (not a throwaway), and `make bootstrap` has created that account.
+* [ ] **Generated DB secret**: `secrets/mysql_root_password.txt` holds a fresh
+      `openssl rand -base64 24` value, is mode 0444 in a 0700 directory, and is
+      copied into the operator's secret store. Never commit it.
+* [ ] **PRODUCTION PUBLISH (human approval)**: the named human operator reviews
+      this checklist, runs `make up` and `make verify` against the production
+      `.env`, and performs the DNS cutover. No agent performs this step.
+* [ ] **Backups and rollback**: a scheduled `make backup` is in place, and the
+      section 9 rollback has been rehearsed against the pre-upgrade dump.

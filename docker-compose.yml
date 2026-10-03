@@ -83,10 +83,14 @@ services:
     networks:
       - ghostnet
 
-# Volume and network names are derived from the Compose project name (set with
-# `-p`); they are deliberately NOT built from ${COMPOSE_PROJECT_NAME} here,
-# because an ambient value in the operator's shell would then leak into the
-# resource names. scripts/lib.sh pins `-p` and refuses the protected project.
+# Volume and network names are derived from the Compose project name. The
+# top-level `name:` above does NOT beat an ambient COMPOSE_PROJECT_NAME exported
+# by the operator's shell, and neither does .env on its own: on a host that
+# exports COMPOSE_PROJECT_NAME for another (production) project, a BARE
+# `docker compose` in this directory targets that project instead. Only the
+# scripts guard this: scripts/lib.sh loads .env (whose COMPOSE_PROJECT_NAME
+# wins), pins `--project-name`, and refuses the protected `omni-stack` project.
+# Never run a bare `docker compose` here on such a host.
 volumes:
   db-data:
   ghost-content:

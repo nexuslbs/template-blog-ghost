@@ -32,7 +32,9 @@ does not invent mechanisms.
 On the host that runs Docker:
 
 * Docker Engine with Compose v2 (`docker compose`).
+* `make` for the Quickstart targets in the `Makefile`.
 * `curl`, `jq`, `openssl` (or `node`) for the Admin API scripts.
+* `zip` and `unzip` for `scripts/apply.sh` (theme download and symlink repack).
 * A reverse proxy / TLS terminator is expected in production; this template
   serves plain HTTP on the published port.
 
