@@ -1,0 +1,2 @@
+{"errors":[{"message":"Invalid token","context":null,"type":"BadRequestError","details":null,"property":null,"help":null,"code":"INVALID_JWT","id":"6f60fc54-9e20-429c-a2fa-70737d07fbc4","ghostErrorCode":null}]}
+HTTP 400

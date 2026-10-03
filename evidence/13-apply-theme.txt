@@ -1,0 +1,17 @@
+[2026-10-03T21:38:06Z] sha256 verified: 6ac4bf2ab6c023682b611ce056f518a90ea4673b3f6f8900bf8794922b0c8d85
+[2026-10-03T21:38:07Z] repacked theme as casper-5.12.5.zip without symlinks: 405351 bytes
+[2026-10-03T21:38:07Z] uploading theme: POST http://172.18.0.1:2368/ghost/api/admin/themes/upload/
+[2026-10-03T21:38:07Z] upload: HTTP 200
+{
+  "themes": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-03T21:38:07Z] activating theme: PUT http://172.18.0.1:2368/ghost/api/admin/themes/casper-5.12.5/activate/
+[2026-10-03T21:38:07Z] activate: HTTP 200
+{
+  "active": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-03T21:38:07Z] apply: OK

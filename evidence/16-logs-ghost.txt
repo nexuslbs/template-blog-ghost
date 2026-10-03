@@ -1,0 +1,51 @@
+### docker compose logs --tail=50 ghost
+ghost-1  | [2026-10-03 21:37:49] [36mINFO[39m "GET /ghost/api/admin/site/" [32m200[39m 2ms
+ghost-1  | [2026-10-03 21:38:00] [36mINFO[39m "GET /ghost/api/admin/site/" [32m200[39m 1ms
+ghost-1  | [2026-10-03 21:38:07] [36mINFO[39m "POST /ghost/api/admin/themes/upload/" [32m200[39m 238ms
+ghost-1  | [2026-10-03 21:38:07] [36mINFO[39m Invalidating assets for regeneration
+ghost-1  | [2026-10-03 21:38:07] [36mINFO[39m "PUT /ghost/api/admin/themes/casper-5.12.5/activate/" [32m200[39m 237ms
+ghost-1  | [2026-10-03 21:38:07] [36mINFO[39m "GET /ghost/api/admin/site/" [32m200[39m 1ms
+ghost-1  | [2026-10-03 21:38:07] [36mINFO[39m "GET /ghost/api/admin/authentication/setup/" [32m200[39m 5ms
+ghost-1  | [2026-10-03 21:38:08] [36mINFO[39m Invalidating assets for regeneration
+ghost-1  | [2026-10-03 21:38:08] [36mINFO[39m "PUT /ghost/api/admin/themes/casper-5.12.5/activate/" [32m200[39m 115ms
+ghost-1  | [2026-10-03 21:38:08] [36mINFO[39m [Background Job] send-webmentions started
+ghost-1  | [2026-10-03 21:38:08] [36mINFO[39m [Background Job] send-webmentions completed in 4ms
+ghost-1  | [2026-10-03 21:38:08] [36mINFO[39m "POST /ghost/api/admin/posts/?source=html" [32m201[39m 387ms
+ghost-1  | [2026-10-03 21:38:10] [36mINFO[39m "GET /ghost/api/admin/site/" [32m200[39m 1ms
+ghost-1  | [2026-10-03 21:38:10] [36mINFO[39m [indexnow] Successfully pinged http://172.18.0.1:2368/template-smoke-2026-10-03t21-38-08z/
+ghost-1  | [2026-10-03 21:38:13] [31mERROR[39m Probe unresponsive.
+ghost-1  | [31m
+ghost-1  | [31mProbe unresponsive.[39m
+ghost-1  | 
+ghost-1  | [1m[37mError ID:[39m[22m
+ghost-1  |     [90m2b3859be-41dd-47b8-9365-82578323bbc3[39m
+ghost-1  | 
+ghost-1  | [1m[37mError Code: [39m[22m
+ghost-1  |     [90mIMAGE_SIZE_URL[39m
+ghost-1  | 
+ghost-1  | [90m----------------------------------------[39m
+ghost-1  | 
+ghost-1  | [90mInternalServerError: Probe unresponsive.
+ghost-1  |     at Timeout.<anonymous> (/var/lib/ghost/versions/6.67.0/core/server/lib/image/image-size.js:90:11)
+ghost-1  |     at listOnTimeout (node:internal/timers:585:17)
+ghost-1  |     at process.processTimers (node:internal/timers:521:7)[39m
+ghost-1  | [39m
+ghost-1  | [2026-10-03 21:38:13] [31mERROR[39m Probe unresponsive.
+ghost-1  | [31m
+ghost-1  | [31mProbe unresponsive.[39m
+ghost-1  | 
+ghost-1  | [1m[37mError ID:[39m[22m
+ghost-1  |     [90m2b3859be-41dd-47b8-9365-82578323bbc3[39m
+ghost-1  | 
+ghost-1  | [1m[37mError Code: [39m[22m
+ghost-1  |     [90mIMAGE_SIZE_URL[39m
+ghost-1  | 
+ghost-1  | [90m----------------------------------------[39m
+ghost-1  | 
+ghost-1  | [90mInternalServerError: Probe unresponsive.
+ghost-1  |     at Timeout.<anonymous> (/var/lib/ghost/versions/6.67.0/core/server/lib/image/image-size.js:90:11)
+ghost-1  |     at listOnTimeout (node:internal/timers:585:17)
+ghost-1  |     at process.processTimers (node:internal/timers:521:7)[39m
+ghost-1  | [39m
+ghost-1  | [2026-10-03 21:38:13] [36mINFO[39m "GET /template-smoke-2026-10-03t21-38-08z/" [32m200[39m 5077ms
+ghost-1  | [2026-10-03 21:38:20] [36mINFO[39m "GET /ghost/api/admin/site/" [32m200[39m 1ms

@@ -1,0 +1,29 @@
+[2026-10-03T21:41:20Z] 1. site health: GET http://172.18.0.1:2368/ghost/api/admin/site/
+{
+  "title": "Template Blog Ghost Sandbox",
+  "version": "6.67",
+  "url": "http://172.18.0.1:2368/"
+}
+[2026-10-03T21:41:20Z] 2. database ping
+mysqladmin: [Warning] Using a password on the command line interface can be insecure.
+mysqld is alive
+[2026-10-03T21:41:21Z] db: OK
+[2026-10-03T21:41:21Z] 3. setup status
+{
+  "setup": [
+    {
+      "status": true
+    }
+  ]
+}
+[2026-10-03T21:41:21Z] 4. active theme via idempotent activate (integrations may not list themes)
+[2026-10-03T21:41:21Z] activate casper-5.12.5: HTTP 200
+{
+  "active": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-03T21:41:21Z] 5. publish smoke post: POST http://172.18.0.1:2368/ghost/api/admin/posts/?source=html
+posts[0].url = http://172.18.0.1:2368/template-smoke-2026-10-03t21-41-21z/
+GET http://172.18.0.1:2368/template-smoke-2026-10-03t21-41-21z/ -> HTTP 200
+[2026-10-03T21:41:28Z] verify: OK

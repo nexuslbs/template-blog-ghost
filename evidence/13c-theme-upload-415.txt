@@ -1,0 +1,6 @@
+--- with Accept-Version v6.0 ---
+{"errors":[{"message":"Symlinks are not allowed in the zip folder.","context":"The zip contains a symlink entry.","type":"UnsupportedMediaTypeError","details":{"entryName":"Casper-5.12.5/CLAUDE.md"},"property":null,"help":null,"code":"SYMLINK_NOT_ALLOWED","id":"1582f9c4-2ea5-4909-ab95-cbb8e5e4687b","ghostErrorCode":null}]}
+HTTP 415
+--- without Accept-Version ---
+{"errors":[{"message":"Symlinks are not allowed in the zip folder.","context":"The zip contains a symlink entry.","type":"UnsupportedMediaTypeError","details":{"entryName":"Casper-5.12.5/CLAUDE.md"},"property":null,"help":null,"code":"SYMLINK_NOT_ALLOWED","id":"8669a8e2-dec0-4793-81f7-f22c440a8cc6","ghostErrorCode":null}]}
+HTTP 415

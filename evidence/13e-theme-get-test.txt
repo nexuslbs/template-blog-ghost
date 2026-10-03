@@ -1,0 +1,12 @@
+--- GET /ghost/api/admin/themes/
+{"errors":[{"message":"API tokens do not have permission to access this endpoint","context":null,"type":"NoPermissionError","details":null,"property":null,"help":null,"code":null,"id":"92b82188-2c54-45cd-a049-40597e196c91","ghostErrorCode":null}]}
+HTTP 403
+
+--- GET /ghost/api/admin/themes/casper-5.12.5-nosymlinks/
+{"errors":[{"message":"Request could not be served, the endpoint was not found.","context":"Provided client accept-version v6.0 is behind current Ghost version v6.67.","type":"RequestNotAcceptableError","details":null,"property":null,"help":"Try upgrading your Ghost API client.","code":"UPDATE_CLIENT","id":"d3d16a09-4cc9-41a4-b0c7-5ab3479697b5","ghostErrorCode":null}]}
+HTTP 406
+
+--- GET /ghost/api/admin/themes/casper/
+{"errors":[{"message":"Request could not be served, the endpoint was not found.","context":"Provided client accept-version v6.0 is behind current Ghost version v6.67.","type":"RequestNotAcceptableError","details":null,"property":null,"help":"Try upgrading your Ghost API client.","code":"UPDATE_CLIENT","id":"23e0cd8f-c13a-4679-b486-4cfeacda251d","ghostErrorCode":null}]}
+HTTP 406
+

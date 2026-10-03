@@ -1,0 +1,4 @@
+### docker stats --no-stream (project containers)
+CONTAINER ID   NAME                          CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O         PIDS
+c576b051c6a8   template-blog-ghost-ghost-1   0.02%     234.9MiB / 7.752GiB   2.96%     4.33MB / 636kB   61.4MB / 4.86MB   11
+272e7ffb5f4e   template-blog-ghost-db-1      0.98%     487.3MiB / 7.752GiB   6.14%     525kB / 1.02MB   149MB / 922MB     45

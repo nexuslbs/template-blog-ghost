@@ -1,0 +1,25 @@
+[2026-10-03T21:35:17Z] 1/4 site health: GET http://172.18.0.1:2368/ghost/api/admin/site/
+[2026-10-03T21:35:17Z] site health: HTTP 200
+[2026-10-03T21:35:17Z] 2/4 setup owner (unauthenticated, accepted only before setup)
+[2026-10-03T21:35:18Z] setup: HTTP 201
+[2026-10-03T21:35:18Z] 3/4 owner session: POST http://172.18.0.1:2368/ghost/api/admin/session/
+[2026-10-03T21:35:18Z] session: HTTP 201 (cookie stored)
+[2026-10-03T21:35:18Z] 4/4 integration + api keys: POST http://172.18.0.1:2368/ghost/api/admin/integrations/?include=api_keys
+[2026-10-03T21:35:18Z] integration: HTTP 201
+{
+  "integration": "dsh-template",
+  "keys": [
+    {
+      "type": "content",
+      "id": "6ac1751672451e0001e84f1e",
+      "secret": "66b68c...REDACTED"
+    },
+    {
+      "type": "admin",
+      "id": "6ac1751672451e0001e84f20",
+      "secret": "6ac175...REDACTED"
+    }
+  ]
+}
+[2026-10-03T21:35:18Z] wrote /opt/workspace/tmp/template-blog-ghost/repo/runtime/admin-api.json (mode 600, gitignored)
+[2026-10-03T21:35:18Z] bootstrap: OK

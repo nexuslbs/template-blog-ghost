@@ -1,0 +1,10 @@
+--- upload casper.zip ---
+HTTP 422
+{"errors":[{"message":"Please rename your zip, it's not allowed to override the default theme.","context":null,"type":"ValidationError","details":null,"property":null,"help":null,"code":null,"id":"bf89b100-2413-4ede-9eed-f25f25452011","ghostErrorCode":null}]}--- public homepage theme marker ---
+casper.js?v=Wk5PDoc8JwHVIPbN
+casper.js?v=Wk5PDoc8JwHVIPbN
+--- generated asset path hints ---
+/assets/built/screen.css
+/assets/built/casper.js
+/assets/built/screen.css
+/assets/built/casper.js

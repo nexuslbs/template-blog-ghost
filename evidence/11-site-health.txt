@@ -1,0 +1,28 @@
+### curl -i http://172.18.0.1:2368/ghost/api/admin/site/   (BEFORE bootstrap)
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Version: v6.67
+Vary: Accept-Version, Accept-Encoding
+Cache-Control: no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0
+Content-Type: application/json; charset=utf-8
+Content-Length: 378
+ETag: W/"17a-pEl36mpAWgR2W8g8pG66g0XGl1g"
+Date: Sat, 03 Oct 2026 21:35:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"site":{"title":"Ghost","description":"Thoughts, stories and ideas","logo":null,"icon":null,"cover_image":"https://static.ghost.org/v5.0.0/images/publication-cover.jpg","accent_color":"#FF1A75","locale":"en","timezone":"Etc/UTC","url":"http://172.18.0.1:2368/","version":"6.67","allow_external_signup":true,"site_uuid":"4383cb7f-e739-4a58-bc10-e32d77f68fda","authReact":false}}
+### curl -i http://172.18.0.1:2368/ghost/api/admin/authentication/setup/
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Version: v6.67
+Vary: Accept-Version, Accept-Encoding
+Cache-Control: no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0
+Content-Type: application/json; charset=utf-8
+Content-Length: 28
+ETag: W/"1c-sQKS0vX9z/0iYRVKKjytkkIupoI"
+Date: Sat, 03 Oct 2026 21:35:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"setup":[{"status":false}]}

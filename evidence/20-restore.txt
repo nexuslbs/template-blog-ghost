@@ -1,0 +1,18 @@
+[2026-10-03T21:40:16Z] restoring from /opt/workspace/tmp/template-blog-ghost/repo/backups/20261003T213827Z
+[2026-10-03T21:40:16Z] stopping ghost (writes pause while state is replaced)
+ Container template-blog-ghost-ghost-1 Stopping 
+ Container template-blog-ghost-ghost-1 Stopped 
+[2026-10-03T21:40:16Z] 1/2 restoring database
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[2026-10-03T21:40:52Z] 2/2 restoring content
+ Container template-blog-ghost-ghost-run-d3a6fa289432 Creating 
+ Container template-blog-ghost-ghost-run-d3a6fa289432 Created 
+[2026-10-03T21:40:53Z] starting ghost
+ Container template-blog-ghost-db-1 Waiting 
+ Container template-blog-ghost-db-1 Healthy 
+ Container template-blog-ghost-ghost-1 Starting 
+ Container template-blog-ghost-ghost-1 Started 
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        12 minutes ago   Up 12 minutes (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     2 minutes ago    Up 10 seconds (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-03T21:41:04Z] restore: OK

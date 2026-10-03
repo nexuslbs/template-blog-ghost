@@ -1,0 +1,4 @@
+### scripts/ps.sh  (docker compose ps, project pinned)
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED         STATUS                   PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        9 minutes ago   Up 9 minutes (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:2368->2368/tcp

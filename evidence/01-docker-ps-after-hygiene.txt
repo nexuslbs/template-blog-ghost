@@ -1,0 +1,21 @@
+===== docker ps AFTER (raw) =====
+NAMES                              IMAGE                                                    STATUS                    project
+omni-stack-dashboard-1             ghcr.io/nexuslbs/omni-deployer/dashboard:0.4.3           Up 9 hours                omni-stack
+omni-stack-toolbox-1               ghcr.io/nexuslbs/omni-deployer/toolbox:0.4.3             Up 9 hours                omni-stack
+omni-stack-omniagent-1             ghcr.io/nexuslbs/omni-deployer/omniagent:0.4.3           Up 9 hours                omni-stack
+omni-stack-workstation-1           ghcr.io/nexuslbs/deepseek-harness:0.0.8                  Up 12 minutes (healthy)   omni-stack
+omni-stack-workstation-tools-1     ghcr.io/nexuslbs/omni-images/workstation-tools:0.0.11    Up 3 days                 omni-stack
+omni-stack-workstation-office-1    ghcr.io/nexuslbs/omni-images/workstation-office:0.0.11   Up 3 days                 omni-stack
+omni-stack-workstation-media-1     ghcr.io/nexuslbs/omni-images/workstation-media:0.0.9     Up 3 days                 omni-stack
+omni-stack-mattermost-1            mattermost/mattermost-team-edition:10.11.20              Up 3 days (healthy)       omni-stack
+omni-stack-vector-1                omni-stack-vector                                        Up 3 days                 omni-stack
+omni-stack-grafana-1               omni-stack-grafana                                       Up 8 hours                omni-stack
+omni-stack-mattermost-db-1         postgres:16.14                                           Up 3 days (healthy)       omni-stack
+omni-stack-loki-1                  omni-stack-loki                                          Up 3 days                 omni-stack
+omni-stack-postgres-1              pgvector/pgvector:pg16                                   Up 3 days (healthy)       omni-stack
+omni-stack-prometheus-1            omni-stack-prometheus                                    Up 3 days                 omni-stack
+omni-stack-cloudflared-1           omni-stack-cloudflared                                   Up 3 days                 omni-stack
+omni-stack-noop-provider-1         omni-stack-noop-provider                                 Up 3 days (healthy)       omni-stack
+omni-stack-workstation-datasci-1   ghcr.io/nexuslbs/omni-images/workstation-datasci:0.0.8   Up 3 days                 omni-stack
+omni-stack-browser-1               ghcr.io/nexuslbs/omni-images/browser:0.0.4               Up 5 days                 omni-stack
+omni-stack-workbench-1             ghcr.io/nexuslbs/workbench:0.0.8                         Up 5 days (healthy)       omni-stack

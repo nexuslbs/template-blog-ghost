@@ -1,0 +1,17 @@
+[2026-10-03T21:41:08Z] ensuring db is healthy
+ Container template-blog-ghost-db-1 Running 
+[2026-10-03T21:41:08Z] recreating ghost so boot.js runs pending migrations
+ Container template-blog-ghost-db-1 Running 
+ Container template-blog-ghost-ghost-1 Recreate 
+ Container template-blog-ghost-ghost-1 Recreated 
+ Container template-blog-ghost-db-1 Waiting 
+ Container template-blog-ghost-db-1 Healthy 
+ Container template-blog-ghost-ghost-1 Starting 
+ Container template-blog-ghost-ghost-1 Started 
+[2026-10-03T21:41:20Z] latest applied migration (Ghost schema version)
+mysql: [Warning] Using a password on the command line interface can be insecure.
+2026-09-29-16-22-08-add-description-to-automations.js	6.67	6.67
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        12 minutes ago   Up 12 minutes (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     12 seconds ago   Up 10 seconds (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-03T21:41:20Z] migrate: OK
