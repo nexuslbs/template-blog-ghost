@@ -17,7 +17,11 @@ if [ ! -s "$secret_file" ]; then
 create it with:
   mkdir -p \"$(dirname "$secret_file")\" && openssl rand -base64 24 > \"$secret_file\""
 fi
-chmod 600 "$secret_file" 2>/dev/null || true
+# The compose file secret preserves the host file mode inside the container;
+# Ghost runs as the unprivileged `node` user, so the file must be readable by
+# it. Keep the parent directory private (0700) and the file read-only (0444).
+chmod 700 "$(dirname "$secret_file")" 2>/dev/null || true
+chmod 0444 "$secret_file" 2>/dev/null || true
 
 log "starting stack (project ${COMPOSE_PROJECT_NAME:-template-blog-ghost})"
 compose up -d

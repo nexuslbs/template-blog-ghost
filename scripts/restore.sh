@@ -31,7 +31,9 @@ compose exec -T db sh -c \
   'exec mysql -uroot -p"$(cat /run/secrets/ghost_db_secret)" ghost' < "$dir/ghost.sql"
 
 log "2/2 restoring content"
-compose exec -T ghost sh -c 'tar xzf - -C /var/lib/ghost/content' < "$dir/content.tar.gz"
+# ghost is stopped here, so a one-off container with the same volume and
+# entrypoint tar is used instead of 'exec' (which needs a running service).
+compose run --rm --no-deps --entrypoint tar -T ghost xzf - -C /var/lib/ghost/content < "$dir/content.tar.gz"
 
 log "starting ghost"
 compose start ghost

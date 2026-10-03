@@ -25,10 +25,10 @@ log "recreating ghost so boot.js runs pending migrations"
 compose up -d --force-recreate ghost
 wait_for_healthy ghost 120 || { compose logs --tail=100 ghost; die "ghost did not become healthy"; }
 
-log "database schema version"
+log "latest applied migration (Ghost schema version)"
 compose exec -T db sh -c \
   'exec mysql -N -B -uroot -p"$(cat /run/secrets/ghost_db_secret)" ghost' <<'SQL'
-SELECT value FROM settings WHERE `key`='databaseVersion';
+SELECT name, version, currentVersion FROM migrations ORDER BY id DESC LIMIT 1;
 SQL
 
 compose ps

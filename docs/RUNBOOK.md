@@ -33,7 +33,7 @@ cp .env.example .env
 # edit .env (see the table below)
 mkdir -p secrets
 openssl rand -base64 24 > secrets/mysql_root_password.txt
-chmod 600 secrets/mysql_root_password.txt
+chmod 444 secrets/mysql_root_password.txt  # readable by the unprivileged ghost user
 make up
 ```
 
@@ -86,7 +86,7 @@ The Admin API key id/secret are written to `runtime/admin-api.json` (mode 600,
 gitignored). Later requests sign a JWT: header
 `{"alg":"HS256","typ":"JWT","kid":"<id>"}`, payload
 `{"iat":now,"exp":now+300,"aud":"/admin/"}`, HMAC-SHA256 over the **hex-decoded**
-secret, sent as `Authorization: Ghost <id>:<jwt>`.
+secret, sent as `Authorization: Ghost <jwt>` (the key id lives in the JWT `kid` header).
 
 ## 4. Apply the theme
 
@@ -97,6 +97,22 @@ make apply
 Downloads the URL in `config/themes.lock.json`, verifies the recorded sha256,
 then `POST /ghost/api/admin/themes/upload/` (multipart field `file`) and
 `PUT /ghost/api/admin/themes/<name>/activate/`.
+
+Two official constraints shape this step, both observed against `6.67.0-alpine`:
+
+* **Symlinks are rejected.** An upload containing any symlink entry fails with
+  HTTP 415 `SYMLINK_NOT_ALLOWED`. The official Casper `v5.12.5` archive contains
+  one (`Casper-5.12.5/CLAUDE.md` -> `AGENTS.md`), so `apply.sh` unpacks it and
+  repacks the tree with every link dereferenced (`cp -rL`) before uploading.
+* **The bundled default theme cannot be overridden.** Ghost names an uploaded
+  theme after the uploaded zip file, and a zip named `casper.zip` is refused with
+  HTTP 422 `Please rename your zip, it's not allowed to override the default
+  theme.` The lock therefore records `"installAs": "casper-5.12.5"`: the archive
+  is uploaded as `casper-5.12.5.zip` and that is the theme that gets activated.
+* **Integrations may not list themes.** `GET /ghost/api/admin/themes/` answers
+  403 `API tokens do not have permission to access this endpoint` for an
+  integration key (it is Owner-only). `verify.sh` reads the active theme from the
+  response of the idempotent activate call instead.
 
 ## 5. Verify
 
@@ -150,7 +166,8 @@ Ghost runs any needed migrations on boot.
 
 There is no official "migration" command to call separately in this image; the
 supported route is the container boot. `scripts/migrate.sh` is that boot plus a
-schema-version read from the `settings` table (`databaseVersion`).
+read of the latest applied row from the `migrations` table (`name`, `version`,
+`currentVersion`).
 
 ## 9. Rollback
 
@@ -188,6 +205,10 @@ and TLS at the published port.
 * **No plugin system.** Ghost does not support server-side plugins. There is no
   official hook to run custom Node code inside the Ghost process. Themes and the
   Admin/Content APIs are the only extension surfaces.
+* **No theme list for integration tokens.** The themes list endpoint is Owner-only;
+  an integration key can upload and activate but not enumerate themes.
+* **No override of the bundled default theme.** An upload named after the default
+  theme is refused; install under a versioned name (`installAs`).
 * **No supported in-container Ghost CLI lifecycle.** Docker Hub warns most
   Ghost-CLI commands do not work in the image; this template never depends on
   them, including for migrations and backups.

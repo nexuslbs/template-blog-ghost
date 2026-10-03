@@ -8,7 +8,9 @@
       "url": "https://github.com/TryGhost/Casper/archive/refs/tags/v5.12.5.zip",
       "bytes": 406884,
       "sha256": "6ac4bf2ab6c023682b611ce056f518a90ea4673b3f6f8900bf8794922b0c8d85",
-      "activate": true
+      "installAs": "casper-5.12.5",
+      "activate": true,
+      "notes": "Ghost names an uploaded theme after the uploaded zip file, and refuses to override its bundled default theme 'casper' (HTTP 422). The archive is therefore installed as casper-5.12.5."
     }
   ]
 }

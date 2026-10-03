@@ -61,7 +61,12 @@ require_creds() {
 }
 
 admin_key_id() { jq -r '.api_keys[] | select(.type=="admin") | .id' "$RUNTIME_DIR/admin-api.json"; }
-admin_key_secret() { jq -r '.api_keys[] | select(.type=="admin") | .secret' "$RUNTIME_DIR/admin-api.json"; }
+# The Admin API key is returned as "<id>:<hex-secret>" (the integration JSON
+# puts that composite in `secret`). The JWT is signed with the secret part only.
+admin_key_secret() {
+  jq -r '.api_keys[] | select(.type=="admin") | .secret' "$RUNTIME_DIR/admin-api.json" \
+    | sed 's/^[^:]*://'
+}
 
 # Sign a Ghost Admin API JWT (official scheme):
 #   header  {"alg":"HS256","typ":"JWT","kid":"<id>"}

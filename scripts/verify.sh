@@ -20,19 +20,30 @@ log "db: OK"
 log "3. setup status"
 curl -fsS "$url/ghost/api/admin/authentication/setup/" | jq .
 
-log "4. active theme (Admin API)"
+# The themes LIST endpoint is Owner-only and refuses integration tokens (403),
+# so the active theme is read from the response of the (idempotent) activate
+# call, which the integration token may make.
+log "4. active theme via idempotent activate (integrations may not list themes)"
 require_creds
 kid="$(admin_key_id)"; secret="$(admin_key_secret)"
+lock="$ROOT_DIR/config/themes.lock.json"
+theme_name="${GHOST_THEME_NAME:-casper}"
+install_as="$(jq -r --arg n "$theme_name" '.themes[] | select(.name==$n) | (.installAs // .name)' "$lock")"
+body="$(mktemp)"
+trap 'rm -f "$body"' EXIT
 token="$(make_jwt "$kid" "$secret")"
-curl -fsS "$url/ghost/api/admin/themes/" \
-  -H "Authorization: Ghost $kid:$token" -H 'Accept-Version: v6.0' \
-  | jq '{active: [.themes[] | select(.active==true) | .name]}'
+code="$(curl -sS -o "$body" -w '%{http_code}' -X PUT \
+  "$url/ghost/api/admin/themes/$install_as/activate/" \
+  -H "Authorization: Ghost $token" -H 'Accept-Version: v6.0')"
+log "activate $install_as: HTTP $code"
+jq '{active: [.themes[] | select(.active==true) | .name]}' "$body" 2>/dev/null || cat "$body"
+[ "$code" = "200" ] || die "theme activate returned HTTP $code"
 
 log "5. publish smoke post: POST $url/ghost/api/admin/posts/?source=html"
 post_title="Template smoke $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 token="$(make_jwt "$kid" "$secret")"
 resp="$(curl -fsS -X POST "$url/ghost/api/admin/posts/?source=html" \
-  -H "Authorization: Ghost $kid:$token" \
+  -H "Authorization: Ghost $token" \
   -H 'Accept-Version: v6.0' \
   -H 'Content-Type: application/json' \
   -d "$(jq -nc --arg t "$post_title" \

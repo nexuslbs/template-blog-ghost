@@ -43,7 +43,7 @@ cp .env.example .env
 # edit .env: GHOST_URL, GHOST_ADMIN_EMAIL, GHOST_ADMIN_PASSWORD, ...
 mkdir -p secrets
 openssl rand -base64 24 > secrets/mysql_root_password.txt
-chmod 600 secrets/mysql_root_password.txt
+chmod 444 secrets/mysql_root_password.txt  # readable by the unprivileged ghost user
 
 make up          # start, wait for healthy
 make bootstrap   # create owner + Admin API integration (writes runtime/admin-api.json)
