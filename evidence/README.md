@@ -30,6 +30,7 @@ All files here are raw captured output from ONE throwaway Compose project,
 | `19a-db-version-probe.txt` | probe showing no `databaseVersion` settings key |
 | `19b-migrations-table.txt` | the `migrations` table is the schema-version source |
 | `20-restore.txt` | `scripts/restore.sh` round trip, both services healthy again |
+| `21-teardown.txt` | `git ls-files`, `down --volumes`, and `docker ps` proving the project is gone |
 
 ## Findings proven by this run
 

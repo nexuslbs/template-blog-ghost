@@ -1,0 +1,88 @@
+=== git ls-files ===
+.env.example
+.gitignore
+Makefile
+README.md
+config/config.production.json
+config/themes.lock.json
+docker-compose.yml
+docs/RUNBOOK.md
+evidence/00-docker-ps-before.txt
+evidence/01-docker-ps-after-hygiene.txt
+evidence/10-up.txt
+evidence/11-site-health.txt
+evidence/12-bootstrap.txt
+evidence/13-apply-theme.txt
+evidence/13a-theme-upload-error.txt
+evidence/13c-theme-upload-415.txt
+evidence/13d-theme-name-test.txt
+evidence/13e-theme-get-test.txt
+evidence/14-verify.txt
+evidence/15-ps.txt
+evidence/16-logs-ghost.txt
+evidence/17-stats.txt
+evidence/18-backup.txt
+evidence/19-migrate.txt
+evidence/19a-db-version-probe.txt
+evidence/19b-migrations-table.txt
+evidence/20-restore.txt
+evidence/README.md
+scripts/apply.sh
+scripts/backup.sh
+scripts/bootstrap.sh
+scripts/down.sh
+scripts/lib.sh
+scripts/logs.sh
+scripts/migrate.sh
+scripts/ps.sh
+scripts/restore.sh
+scripts/up.sh
+scripts/verify.sh
+=== tracked files that must NOT exist ===
+(scan: git ls-files | grep -E '(^|/)\.env$|^secrets/|^runtime/|^backups/|^data/|\.sql$|\.sql\.gz$|\.dump$')
+(none: no .env, no dumps, no secrets, no runtime, no backups, no volume data)
+
+=== tear down: scripts/down.sh --volumes ===
+[2026-10-03T21:42:07Z] down --volumes (deletes db-data and ghost-content)
+ Container template-blog-ghost-ghost-1 Stopping 
+ Container template-blog-ghost-ghost-1 Stopped 
+ Container template-blog-ghost-ghost-1 Removing 
+ Container template-blog-ghost-ghost-1 Removed 
+ Container template-blog-ghost-db-1 Stopping 
+ Container template-blog-ghost-db-1 Stopped 
+ Container template-blog-ghost-db-1 Removing 
+ Container template-blog-ghost-db-1 Removed 
+ Volume template-blog-ghost_ghost-content Removing 
+ Network template-blog-ghost_ghostnet Removing 
+ Volume template-blog-ghost_ghost-content Removed 
+ Volume template-blog-ghost_db-data Removing 
+ Volume template-blog-ghost_db-data Removed 
+ Network template-blog-ghost_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-03T21:42:09Z] down: OK
+
+=== docker ps --filter project=template-blog-ghost (must be empty) ===
+NAMES     STATUS
+=== docker volume ls | grep template-blog-ghost (must be empty) ===
+
+=== docker ps (full host, only omni-stack must remain) ===
+NAMES                              STATUS                    project
+omni-stack-dashboard-1             Up 9 hours                omni-stack
+omni-stack-toolbox-1               Up 9 hours                omni-stack
+omni-stack-omniagent-1             Up 9 hours                omni-stack
+omni-stack-workstation-1           Up 29 minutes (healthy)   omni-stack
+omni-stack-workstation-tools-1     Up 3 days                 omni-stack
+omni-stack-workstation-office-1    Up 3 days                 omni-stack
+omni-stack-workstation-media-1     Up 3 days                 omni-stack
+omni-stack-mattermost-1            Up 3 days (healthy)       omni-stack
+omni-stack-vector-1                Up 3 days                 omni-stack
+omni-stack-grafana-1               Up 8 hours                omni-stack
+omni-stack-mattermost-db-1         Up 3 days (healthy)       omni-stack
+omni-stack-loki-1                  Up 3 days                 omni-stack
+omni-stack-postgres-1              Up 3 days (healthy)       omni-stack
+omni-stack-prometheus-1            Up 3 days                 omni-stack
+omni-stack-cloudflared-1           Up 3 days                 omni-stack
+omni-stack-noop-provider-1         Up 3 days (healthy)       omni-stack
+omni-stack-workstation-datasci-1   Up 3 days                 omni-stack
+omni-stack-browser-1               Up 5 days                 omni-stack
+omni-stack-workbench-1             Up 5 days (healthy)       omni-stack
