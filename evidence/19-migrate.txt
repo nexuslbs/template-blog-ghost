@@ -1,6 +1,17 @@
-[2026-10-03T21:41:08Z] ensuring db is healthy
+=== real upgrade: pinned tag BEFORE ===
+44:    image: ghost:6.65.0-alpine
+
+=== migrations table BEFORE upgrade (ghost 6.65.0) ===
+COUNT(*) FROM migrations = 349
+latest row (name | version | currentVersion): 2026-09-16-15-35-26-add-members-metafield-change-events.js	6.65	6.65
+
+=== tag bump to the new pinned release ===
+44:    image: ghost:6.67.0-alpine
+
+=== scripts/migrate.sh (recreates ghost, boot.js applies pending migrations) ===
+[2026-10-03T22:19:12Z] ensuring db is healthy
  Container template-blog-ghost-db-1 Running 
-[2026-10-03T21:41:08Z] recreating ghost so boot.js runs pending migrations
+[2026-10-03T22:19:12Z] recreating ghost so boot.js runs pending migrations
  Container template-blog-ghost-db-1 Running 
  Container template-blog-ghost-ghost-1 Recreate 
  Container template-blog-ghost-ghost-1 Recreated 
@@ -8,10 +19,26 @@
  Container template-blog-ghost-db-1 Healthy 
  Container template-blog-ghost-ghost-1 Starting 
  Container template-blog-ghost-ghost-1 Started 
-[2026-10-03T21:41:20Z] latest applied migration (Ghost schema version)
+[2026-10-03T22:19:24Z] latest applied migration (Ghost schema version)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 2026-09-29-16-22-08-add-description-to-automations.js	6.67	6.67
 NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
-template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        12 minutes ago   Up 12 minutes (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago    Up 2 minutes (healthy)    3306/tcp, 33060/tcp
 template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     12 seconds ago   Up 10 seconds (healthy)   0.0.0.0:2368->2368/tcp
-[2026-10-03T21:41:20Z] migrate: OK
+[2026-10-03T22:19:24Z] migrate: OK
+
+=== Ghost boot migration log (docker compose logs ghost) ===
+ghost-1  | [2026-10-03 22:19:15] [35mWARN[39m Database state requires migration.
+ghost-1  | [2026-10-03 22:19:15] [36mINFO[39m Running migrations.
+ghost-1  | [2026-10-03 22:19:15] [36mINFO[39m Database is in a ready state.
+ghost-1  | [2026-10-03 22:19:17] [36mINFO[39m Stripe members-migrations skipped because it has already run
+
+=== migrations table AFTER upgrade (ghost 6.67.0) ===
+COUNT(*) FROM migrations = 351
+latest row (name | version | currentVersion): 2026-09-29-16-22-08-add-description-to-automations.js	6.67	6.67
+
+=== data survived the upgrade: marker post status ===
+GET http://172.18.0.1:2368/upgrade-marker/ -> HTTP 200
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago    Up 2 minutes (healthy)    3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     18 seconds ago   Up 16 seconds (healthy)   0.0.0.0:2368->2368/tcp

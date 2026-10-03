@@ -1,11 +1,29 @@
-[2026-10-03T21:34:05Z] starting stack (project template-blog-ghost)
- Container template-blog-ghost-ghost-1 Running 
- Container template-blog-ghost-db-1 Running 
+[2026-10-03T22:15:13Z] starting stack (project template-blog-ghost)
+ Network template-blog-ghost_ghostnet Creating 
+ Network template-blog-ghost_ghostnet Creating 
+ Volume template-blog-ghost_ghost-content Creating 
+ Volume template-blog-ghost_ghost-content Creating 
+ Volume template-blog-ghost_db-data Creating 
+ Volume template-blog-ghost_db-data Creating 
+ Volume template-blog-ghost_ghost-content Created 
+ Volume template-blog-ghost_ghost-content Created 
+ Volume template-blog-ghost_db-data Created 
+ Volume template-blog-ghost_db-data Created 
+ Network template-blog-ghost_ghostnet Created 
+ Network template-blog-ghost_ghostnet Created 
+ Container template-blog-ghost-db-1 Creating 
+ Container template-blog-ghost-db-1 Created 
+ Container template-blog-ghost-ghost-1 Creating 
+ Container template-blog-ghost-ghost-1 Created 
+ Container template-blog-ghost-db-1 Starting 
+ Container template-blog-ghost-db-1 Started 
  Container template-blog-ghost-db-1 Waiting 
  Container template-blog-ghost-db-1 Healthy 
-[2026-10-03T21:34:05Z] waiting for db to become healthy
-[2026-10-03T21:34:05Z] waiting for ghost to become healthy (first boot runs DB migrations)
+ Container template-blog-ghost-ghost-1 Starting 
+ Container template-blog-ghost-ghost-1 Started 
+[2026-10-03T22:15:44Z] waiting for db to become healthy
+[2026-10-03T22:15:44Z] waiting for ghost to become healthy (first boot runs DB migrations)
 NAME                          IMAGE                 COMMAND                  SERVICE   CREATED              STATUS                        PORTS
-template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        6 minutes ago        Up 6 minutes (healthy)        3306/tcp, 33060/tcp
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        About a minute ago   Up About a minute (healthy)   3306/tcp, 33060/tcp
 template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     About a minute ago   Up About a minute (healthy)   0.0.0.0:2368->2368/tcp
-[2026-10-03T21:34:57Z] up: OK
+[2026-10-03T22:17:06Z] up: OK

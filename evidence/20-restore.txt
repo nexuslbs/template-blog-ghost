@@ -1,18 +1,177 @@
-[2026-10-03T21:40:16Z] restoring from /opt/workspace/tmp/template-blog-ghost/repo/backups/20261003T213827Z
-[2026-10-03T21:40:16Z] stopping ghost (writes pause while state is replaced)
+Evidence file: real destroy-plus-empty-volume restore round trip.
+The stack is up on ghost 6.65.0 with the marker post published above.
+
+=== marker post before destroy ===
+GET http://172.18.0.1:2368/upgrade-marker/ -> HTTP 200
+
+=== fresh backup of the current state (this is what DR restores) ===
+[2026-10-03T22:20:38Z] wrote 264K to /opt/workspace/tmp/template-blog-ghost/repo/backups/20261003T222037Z
+total 260
+-rw-r--r-- 1 root root    157 Oct  3 22:20 SHA256SUMS
+-rw-r--r-- 1 root root   5661 Oct  3 22:20 content.tar.gz
+-rw-r--r-- 1 root root 251018 Oct  3 22:20 ghost.sql
+[2026-10-03T22:20:38Z] backup: OK
+BKDR=backups/20261003T222037Z
+
+=== REAL DESTROY: scripts/down.sh --volumes ===
+[2026-10-03T22:20:38Z] down --volumes (deletes db-data and ghost-content)
  Container template-blog-ghost-ghost-1 Stopping 
  Container template-blog-ghost-ghost-1 Stopped 
-[2026-10-03T21:40:16Z] 1/2 restoring database
+ Container template-blog-ghost-ghost-1 Removing 
+ Container template-blog-ghost-ghost-1 Removed 
+ Container template-blog-ghost-db-1 Stopping 
+ Container template-blog-ghost-db-1 Stopped 
+ Container template-blog-ghost-db-1 Removing 
+ Container template-blog-ghost-db-1 Removed 
+ Volume template-blog-ghost_db-data Removing 
+ Volume template-blog-ghost_ghost-content Removing 
+ Network template-blog-ghost_ghostnet Removing 
+ Volume template-blog-ghost_db-data Removed 
+ Volume template-blog-ghost_ghost-content Removed 
+ Network template-blog-ghost_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-03T22:20:41Z] down: OK
+
+=== prove containers, volumes and network are gone ===
+$ docker ps -a (project template-blog-ghost)
+(no containers)
+$ docker volume ls (project template-blog-ghost)
+(no volumes)
+$ docker network ls (project template-blog-ghost)
+(no networks)
+
+=== fresh up on EMPTY volumes ===
+[2026-10-03T22:20:41Z] starting stack (project template-blog-ghost)
+ Network template-blog-ghost_ghostnet Creating 
+ Network template-blog-ghost_ghostnet Creating 
+ Volume template-blog-ghost_ghost-content Creating 
+ Volume template-blog-ghost_ghost-content Creating 
+ Volume template-blog-ghost_db-data Creating 
+ Volume template-blog-ghost_db-data Creating 
+ Volume template-blog-ghost_ghost-content Created 
+ Volume template-blog-ghost_ghost-content Created 
+ Volume template-blog-ghost_db-data Created 
+ Volume template-blog-ghost_db-data Created 
+ Network template-blog-ghost_ghostnet Created 
+ Network template-blog-ghost_ghostnet Created 
+ Container template-blog-ghost-db-1 Creating 
+ Container template-blog-ghost-db-1 Created 
+ Container template-blog-ghost-ghost-1 Creating 
+ Container template-blog-ghost-ghost-1 Created 
+ Container template-blog-ghost-db-1 Starting 
+ Container template-blog-ghost-db-1 Started 
+ Container template-blog-ghost-db-1 Waiting 
+ Container template-blog-ghost-db-1 Healthy 
+ Container template-blog-ghost-ghost-1 Starting 
+ Container template-blog-ghost-ghost-1 Started 
+[2026-10-03T22:21:12Z] waiting for db to become healthy
+[2026-10-03T22:21:12Z] waiting for ghost to become healthy (first boot runs DB migrations)
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED              STATUS                        PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        About a minute ago   Up About a minute (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.65.0-alpine   "docker-entrypoint.s…"   ghost     About a minute ago   Up About a minute (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-03T22:22:34Z] up: OK
+
+=== the post must be 404 on the empty database ===
+GET http://172.18.0.1:2368/upgrade-marker/ -> HTTP 404
+
+=== scripts/restore.sh backups/20261003T222037Z ===
+[2026-10-03T22:22:34Z] ensuring db is up and healthy (restore needs a running database)
+ Container template-blog-ghost-db-1 Running 
+[2026-10-03T22:22:34Z] restoring from backups/20261003T222037Z
+[2026-10-03T22:22:34Z] stopping ghost (writes pause while state is replaced)
+ Container template-blog-ghost-ghost-1 Stopping 
+ Container template-blog-ghost-ghost-1 Stopped 
+[2026-10-03T22:22:35Z] 1/2 restoring database
 mysql: [Warning] Using a password on the command line interface can be insecure.
-[2026-10-03T21:40:52Z] 2/2 restoring content
- Container template-blog-ghost-ghost-run-d3a6fa289432 Creating 
- Container template-blog-ghost-ghost-run-d3a6fa289432 Created 
-[2026-10-03T21:40:53Z] starting ghost
+[2026-10-03T22:23:11Z] 2/2 restoring content
+ Container template-blog-ghost-ghost-run-8136f03b98ea Creating 
+ Container template-blog-ghost-ghost-run-8136f03b98ea Created 
+[2026-10-03T22:23:12Z] starting ghost
+ Container template-blog-ghost-db-1 Running 
+ Container template-blog-ghost-db-1 Waiting 
+ Container template-blog-ghost-db-1 Healthy 
+ Container template-blog-ghost-ghost-1 Starting 
+ Container template-blog-ghost-ghost-1 Started 
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED         STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago   Up 2 minutes (healthy)    3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.65.0-alpine   "docker-entrypoint.s…"   ghost     2 minutes ago   Up 10 seconds (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-03T22:23:23Z] restore: OK
+
+=== the post must be 200 again ===
+GET http://172.18.0.1:2368/upgrade-marker/ -> HTTP 200
+body check:
+Upgrade marker
+
+=== ROLLBACK after down (keep volumes) ===
+The same restore path also serves the documented rollback order.
+=== ROLLBACK sequence from docs/RUNBOOK.md section 9 ===
+
+1. pin the previous tag
+44:    image: ghost:6.65.0-alpine
+
+2. scripts/down.sh (keeps named volumes)
+[2026-10-03T22:19:30Z] down (keeps named volumes)
+ Container template-blog-ghost-ghost-1 Stopping 
+ Container template-blog-ghost-ghost-1 Stopped 
+ Container template-blog-ghost-ghost-1 Removing 
+ Container template-blog-ghost-ghost-1 Removed 
+ Container template-blog-ghost-db-1 Stopping 
+ Container template-blog-ghost-db-1 Stopped 
+ Container template-blog-ghost-db-1 Removing 
+ Container template-blog-ghost-db-1 Removed 
+ Network template-blog-ghost_ghostnet Removing 
+ Network template-blog-ghost_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-03T22:19:33Z] down: OK
+containers after down:
+(none)
+volumes after down:
+template-blog-ghost_db-data
+template-blog-ghost_ghost-content
+
+3. scripts/restore.sh backups/20261003T221911Z  (this used to fail with: service "db" is not running)
+[2026-10-03T22:19:33Z] ensuring db is up and healthy (restore needs a running database)
+ Network template-blog-ghost_ghostnet Creating 
+ Network template-blog-ghost_ghostnet Creating 
+ Network template-blog-ghost_ghostnet Created 
+ Network template-blog-ghost_ghostnet Created 
+ Container template-blog-ghost-db-1 Creating 
+ Container template-blog-ghost-db-1 Created 
+ Container template-blog-ghost-db-1 Starting 
+ Container template-blog-ghost-db-1 Started 
+[2026-10-03T22:19:39Z] restoring from backups/20261003T221911Z
+[2026-10-03T22:19:39Z] stopping ghost (writes pause while state is replaced)
+[2026-10-03T22:19:39Z] 1/2 restoring database
+mysql: [Warning] Using a password on the command line interface can be insecure.
+[2026-10-03T22:20:13Z] 2/2 restoring content
+ Container template-blog-ghost-ghost-run-d6ff744e52e7 Creating 
+ Container template-blog-ghost-ghost-run-d6ff744e52e7 Created 
+[2026-10-03T22:20:14Z] starting ghost
+ Container template-blog-ghost-db-1 Running 
+ Container template-blog-ghost-ghost-1 Creating 
+ Container template-blog-ghost-ghost-1 Created 
  Container template-blog-ghost-db-1 Waiting 
  Container template-blog-ghost-db-1 Healthy 
  Container template-blog-ghost-ghost-1 Starting 
  Container template-blog-ghost-ghost-1 Started 
 NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
-template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        12 minutes ago   Up 12 minutes (healthy)   3306/tcp, 33060/tcp
-template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     2 minutes ago    Up 10 seconds (healthy)   0.0.0.0:2368->2368/tcp
-[2026-10-03T21:41:04Z] restore: OK
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        53 seconds ago   Up 52 seconds (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.65.0-alpine   "docker-entrypoint.s…"   ghost     12 seconds ago   Up 10 seconds (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-03T22:20:26Z] restore: OK
+
+restore exit=0
+
+4. scripts/up.sh (idempotent) and check the marker post
+[2026-10-03T22:20:26Z] starting stack (project template-blog-ghost)
+ Container template-blog-ghost-db-1 Running 
+ Container template-blog-ghost-ghost-1 Running 
+ Container template-blog-ghost-db-1 Waiting 
+ Container template-blog-ghost-db-1 Healthy 
+[2026-10-03T22:20:26Z] waiting for db to become healthy
+[2026-10-03T22:20:27Z] waiting for ghost to become healthy (first boot runs DB migrations)
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        54 seconds ago   Up 53 seconds (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.65.0-alpine   "docker-entrypoint.s…"   ghost     13 seconds ago   Up 11 seconds (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-03T22:20:27Z] up: OK
+
+GET http://172.18.0.1:2368/upgrade-marker/ -> HTTP 200
