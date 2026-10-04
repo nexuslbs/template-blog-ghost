@@ -267,3 +267,44 @@ publish. Record that name in the deployment ticket and tick every item.
       `.env`, and performs the DNS cutover. No agent performs this step.
 * [ ] **Backups and rollback**: a scheduled `make backup` is in place, and the
       section 9 rollback has been rehearsed against the pre-upgrade dump.
+
+## 13. Deploy to a remote host
+
+`scripts/deploy.sh` streams this checkout to an SSH-reachable host that has
+Docker and runs the lifecycle there. It is non-interactive and idempotent and
+delegates to `scripts/up.sh`, `scripts/bootstrap.sh`, `scripts/migrate.sh` and
+`scripts/verify.sh`:
+
+```sh
+scripts/deploy.sh deploy@blog-host            # sync + deploy
+scripts/deploy.sh deploy@blog-host --dry-run  # print the sequence, touch nothing
+scripts/deploy.sh --local                     # run the same sequence here
+```
+
+The target needs only `ssh`, `tar` and `docker`. The script creates `.env` from
+`.env.example` and a throwaway `secrets/mysql_root_password.txt` when absent.
+For production, copy `production.env.example` to `.env`, fill the real secrets
+from the operator secret store and run the deploy; it uses that `.env`. The
+final line prints the public `GHOST_URL`.
+
+## 14. Two-instance, two-theme proof
+
+`GHOST_THEME_NAME` selects the theme; it must name an entry in
+`config/themes.lock.json` (section 2). `instances/a/.env.example` and
+`instances/b/.env.example` are EXAMPLE envs for two stacks with different
+`COMPOSE_PROJECT_NAME`, `GHOST_PORT` and `GHOST_THEME_NAME`. Drive one with the
+`ENV_FILE` variable:
+
+```sh
+cp instances/a/.env.example instances/a/.env
+ENV_FILE=instances/a/.env scripts/up.sh
+ENV_FILE=instances/a/.env scripts/bootstrap.sh
+ENV_FILE=instances/a/.env scripts/apply.sh
+ENV_FILE=instances/a/.env scripts/verify.sh
+```
+
+The shipped lock declares one theme, `casper`. To render a genuinely different
+theme in instance B, add a second pinned theme to the lock and set
+`GHOST_THEME_NAME` to its name; that edits the manifest, never the template's
+own theme files. See `instances/README.md`. The A/B render itself is asserted
+in the docker run phase; this audit is static and starts no container.

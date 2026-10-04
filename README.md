@@ -58,6 +58,23 @@ volumes and the runtime directory.
 
 Or use the scripts directly: `scripts/up.sh`, `scripts/bootstrap.sh`, and so on.
 
+## Deploy
+
+`scripts/deploy.sh` streams this checkout to an SSH-reachable host that has
+Docker and drives the same lifecycle scripts there, non-interactively and
+idempotently:
+
+```sh
+scripts/deploy.sh deploy@blog-host            # sync + up -> bootstrap -> migrate -> verify
+scripts/deploy.sh deploy@blog-host --dry-run  # print the exact sequence, touch nothing
+scripts/deploy.sh --local                     # run the same sequence on this checkout
+```
+
+The target needs only `ssh`, `tar` and `docker`. The script creates `.env` from
+`.env.example` and a throwaway DB secret when they are absent; a production
+operator provisions `.env` from `production.env.example` first (see
+`docs/RUNBOOK.md` section 10). It prints the public `GHOST_URL` at the end.
+
 ## Layout
 
 ```
@@ -74,6 +91,7 @@ scripts/
   verify.sh                 end-to-end proof including a published post
   backup.sh restore.sh      mysqldump + content tar, per docs.ghost.org
   migrate.sh                migrations via Ghost boot, not the Ghost CLI
+  deploy.sh                 ssh/tar deploy wrapper around the scripts above
   logs.sh                   tail logs
 docs/RUNBOOK.md             instantiate -> configure -> verify -> backup ->
                             restore -> upgrade -> rollback, sandbox vs prod
@@ -97,3 +115,13 @@ arbitrary code. Extension is limited to **themes** (Handlebars themes uploaded
 through the Admin API) plus the Admin API itself for content and integrations.
 Anything that needs custom server logic must run as a separate service that
 takes webhooks or polls the Content API. See `docs/RUNBOOK.md`.
+
+The active theme is selected with `GHOST_THEME_NAME` (an entry in
+`config/themes.lock.json`). `instances/a/` and `instances/b/` hold EXAMPLE envs
+for two stacks with two themes; see `instances/README.md`.
+
+## Licence
+
+The template packaging in this repository is released under the MIT licence
+(see `LICENSE`). Ghost core and the official images keep their own upstream
+licences; this repository does not redistribute them.
