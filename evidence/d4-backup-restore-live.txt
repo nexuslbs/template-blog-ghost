@@ -1,0 +1,67 @@
+### D4 Ghost backup/restore round trip through scripts/backup.sh + scripts/restore.sh
+date: 2026-10-05T12:29:31Z
+pre-backup content URL: http://172.18.0.1:2368/template-smoke-2026-10-05t12-26-15z/
+
+$ curl -sS -o /dev/null -w 'HTTP %{http_code}\n' http://172.18.0.1:2368/template-smoke-2026-10-05t12-26-15z/
+HTTP 200
+
+$ ENV_FILE=instances/a/.env scripts/backup.sh
+[2026-10-05T12:29:36Z] 1/2 mysqldump -> /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/backups/20261005T122936Z/ghost.sql
+mysqldump: [Warning] Using a password on the command line interface can be insecure.
+[2026-10-05T12:29:37Z] 2/2 content tar -> /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/backups/20261005T122936Z/content.tar.gz
+[2026-10-05T12:29:37Z] wrote 628K to /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/backups/20261005T122936Z
+total 624
+-rw-r--r-- 1 root root    157 Oct  5 12:29 SHA256SUMS
+-rw-r--r-- 1 root root 380307 Oct  5 12:29 content.tar.gz
+-rw-r--r-- 1 root root 252947 Oct  5 12:29 ghost.sql
+[2026-10-05T12:29:37Z] backup: OK
+backup dir: backups/20261005T122936Z/
+
+$ cat backups/20261005T122936Z/SHA256SUMS
+b823e922b9cfd66a1f78f26a37296320b69ddf300d1c6aa3d154c1e10ff662a4  ghost.sql
+8e7673bc7c8b565823764a9e2baf95ffb81daae94ede70b3f5b39a1e9d98d611  content.tar.gz
+
+$ ENV_FILE=instances/a/.env scripts/down.sh --volumes
+ Volume template-blog-ghost-a_ghost-content Removing 
+ Volume template-blog-ghost-a_db-data Removed 
+ Volume template-blog-ghost-a_ghost-content Removed 
+ Network template-blog-ghost-a_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-05T12:29:39Z] down: OK
+
+$ docker ps -a --filter name=template-blog-ghost-a --format '{{.Names}}'   (expect empty)
+$ docker volume ls --filter name=template-blog-ghost-a --format '{{.Name}}'   (expect empty)
+
+$ ENV_FILE=instances/a/.env scripts/up.sh   (fresh up on EMPTY volumes)
+NAME                            IMAGE                 COMMAND                  SERVICE   CREATED         STATUS                        PORTS
+template-blog-ghost-a-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago   Up 2 minutes (healthy)        3306/tcp, 33060/tcp
+template-blog-ghost-a-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     2 minutes ago   Up About a minute (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-05T12:31:42Z] up: OK
+
+$ curl -sS -o /dev/null -w 'HTTP %{http_code}\n' http://172.18.0.1:2368/template-smoke-2026-10-05t12-26-15z/   (pre-backup content must be ABSENT)
+HTTP 404
+
+$ ENV_FILE=instances/a/.env scripts/restore.sh backups/20261005T122936Z/
+ Container template-blog-ghost-a-ghost-run-63fedced7280 Creating 
+ Container template-blog-ghost-a-ghost-run-63fedced7280 Created 
+[2026-10-05T12:32:22Z] starting ghost
+ Container template-blog-ghost-a-db-1 Running 
+ Container template-blog-ghost-a-db-1 Waiting 
+ Container template-blog-ghost-a-db-1 Healthy 
+ Container template-blog-ghost-a-ghost-1 Starting 
+ Container template-blog-ghost-a-ghost-1 Started 
+NAME                            IMAGE                 COMMAND                  SERVICE   CREATED         STATUS                    PORTS
+template-blog-ghost-a-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago   Up 2 minutes (healthy)    3306/tcp, 33060/tcp
+template-blog-ghost-a-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     2 minutes ago   Up 10 seconds (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-05T12:32:34Z] restore: OK
+
+$ curl -sS -o /dev/null -w 'HTTP %{http_code}\n' http://172.18.0.1:2368/template-smoke-2026-10-05t12-26-15z/   (pre-backup content served AGAIN)
+HTTP 200
+
+$ ENV_FILE=instances/a/.env scripts/verify.sh   (post-restore gate)
+  ]
+}
+[2026-10-05T12:32:39Z] 5. publish smoke post: POST http://172.18.0.1:2368/ghost/api/admin/posts/?source=html
+posts[0].url = http://172.18.0.1:2368/template-smoke-2026-10-05t12-32-39z/
+GET http://172.18.0.1:2368/template-smoke-2026-10-05t12-32-39z/ -> HTTP 200
+[2026-10-05T12:32:45Z] verify: OK

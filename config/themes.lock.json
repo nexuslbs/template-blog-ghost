@@ -11,6 +11,17 @@
       "installAs": "casper-5.12.5",
       "activate": true,
       "notes": "Ghost names an uploaded theme after the uploaded zip file, and refuses to override its bundled default theme 'casper' (HTTP 422). The archive is therefore installed as casper-5.12.5."
+    },
+    {
+      "name": "source",
+      "version": "1.7.6",
+      "kind": "official",
+      "url": "https://github.com/TryGhost/Source/archive/refs/tags/v1.7.6.zip",
+      "bytes": 394697,
+      "sha256": "7172773c329d8db55995588ea2ee35953b900a3c630042a989dd65767650cb29",
+      "installAs": "source-1.7.6",
+      "activate": true,
+      "notes": "Second official Ghost theme, used by instances/b to prove the two-theme gate from the same template. The archive has no symlink entries; apply.sh still repacks every theme with links dereferenced."
     }
   ]
 }

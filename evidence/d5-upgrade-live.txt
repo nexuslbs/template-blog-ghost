@@ -1,0 +1,112 @@
+### D5 Ghost migrate/upgrade: real tag bump 6.65.0 -> 6.67.0 (documented boot migration path)
+date: 2026-10-05T12:33:02Z
+pre-upgrade compose tag (temporary local edit):
+44:    image: ghost:6.65.0-alpine
+
+$ ENV_FILE=.env scripts/up.sh   (project template-blog-ghost at ghost:6.65.0-alpine)
+[2026-10-05T12:33:43Z] waiting for ghost to become healthy (first boot runs DB migrations)
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED         STATUS                        PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago   Up 2 minutes (healthy)        3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.65.0-alpine   "docker-entrypoint.s…"   ghost     2 minutes ago   Up About a minute (healthy)   0.0.0.0:2370->2368/tcp
+[2026-10-05T12:35:05Z] up: OK
+
+$ ENV_FILE=.env scripts/bootstrap.sh
+      "secret": "6ac399...REDACTED"
+    }
+  ]
+}
+[2026-10-05T12:35:06Z] wrote /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/runtime/admin-api.json (mode 600, gitignored)
+[2026-10-05T12:35:06Z] bootstrap: OK
+
+$ ENV_FILE=.env scripts/apply.sh
+{
+  "active": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-05T12:35:10Z] apply: OK
+
+$ ENV_FILE=.env scripts/verify.sh   (publishes the upgrade-marker smoke post)
+  "active": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-05T12:35:11Z] 5. publish smoke post: POST http://172.18.0.1:2370/ghost/api/admin/posts/?source=html
+posts[0].url = http://172.18.0.1:2370/template-smoke-2026-10-05t12-35-11z/
+GET http://172.18.0.1:2370/template-smoke-2026-10-05t12-35-11z/ -> HTTP 200
+[2026-10-05T12:35:16Z] verify: OK
+
+migrations table BEFORE upgrade (ghost 6.65.0):
+mysql: [Warning] Using a password on the command line interface can be insecure.
+349
+2026-09-16-15-35-26-add-members-metafield-change-events.js	6.65	6.65
+
+$ ENV_FILE=.env scripts/backup.sh   (PRE-UPGRADE dump for rollback)
+mysqldump: [Warning] Using a password on the command line interface can be insecure.
+[2026-10-05T12:35:17Z] 2/2 content tar -> /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/backups/20261005T123516Z/content.tar.gz
+[2026-10-05T12:35:17Z] wrote 628K to /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/backups/20261005T123516Z
+total 624
+-rw-r--r-- 1 root root    157 Oct  5 12:35 SHA256SUMS
+-rw-r--r-- 1 root root 380299 Oct  5 12:35 content.tar.gz
+-rw-r--r-- 1 root root 252178 Oct  5 12:35 ghost.sql
+[2026-10-05T12:35:17Z] backup: OK
+
+=== tag bump to the committed pinned release ===
+44:    image: ghost:6.67.0-alpine
+
+$ ENV_FILE=.env scripts/migrate.sh   (recreates ghost; boot.js applies pending migrations)
+[2026-10-05T12:35:25Z] ensuring db is healthy
+ Container template-blog-ghost-db-1 Running 
+[2026-10-05T12:35:26Z] recreating ghost so boot.js runs pending migrations
+ Container template-blog-ghost-db-1 Running 
+ Container template-blog-ghost-ghost-1 Recreate 
+ Container template-blog-ghost-ghost-1 Recreated 
+ Container template-blog-ghost-db-1 Waiting 
+ Container template-blog-ghost-db-1 Healthy 
+ Container template-blog-ghost-ghost-1 Starting 
+ Container template-blog-ghost-ghost-1 Started 
+[2026-10-05T12:35:38Z] latest applied migration (Ghost schema version)
+mysql: [Warning] Using a password on the command line interface can be insecure.
+2026-09-29-16-22-08-add-description-to-automations.js	6.67	6.67
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago    Up 2 minutes (healthy)    3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     12 seconds ago   Up 10 seconds (healthy)   0.0.0.0:2370->2368/tcp
+[2026-10-05T12:35:38Z] migrate: OK
+
+migrations table AFTER upgrade (ghost 6.67.0):
+mysql: [Warning] Using a password on the command line interface can be insecure.
+351
+2026-09-29-16-22-08-add-description-to-automations.js	6.67	6.67
+
+Ghost boot migration log (raw excerpt):
+ghost-1  | [2026-10-05 12:35:28] [35mWARN[39m Database state requires migration.
+ghost-1  | [2026-10-05 12:35:29] [36mINFO[39m Creating database backup
+ghost-1  | [2026-10-05 12:35:29] [36mINFO[39m Database backup written to /var/lib/ghost/content/data/my-ghost-blog.ghost.2026-10-05-12-35-29.json
+ghost-1  | [2026-10-05 12:35:29] [36mINFO[39m Running migrations.
+ghost-1  | [2026-10-05 12:35:29] [36mINFO[39m Database is in a ready state.
+ghost-1  | [2026-10-05 12:35:29] [36mINFO[39m Ghost database ready in 1.923s
+ghost-1  | [2026-10-05 12:35:31] [36mINFO[39m Stripe members-migrations skipped because it has already run
+
+$ curl -sS -o /dev/null -w 'HTTP %{http_code}\n' http://172.18.0.1:2370/template-smoke-2026-10-05t12-35-11z/   (pre-upgrade data survived the bump)
+HTTP 200
+
+=== ROLLBACK: previous tag + pre-upgrade dump ===
+44:    image: ghost:6.65.0-alpine
+$ ENV_FILE=.env scripts/restore.sh backups/20261005T123516Z/
+ Container template-blog-ghost-db-1 Waiting 
+ Container template-blog-ghost-db-1 Healthy 
+ Container template-blog-ghost-ghost-1 Starting 
+ Container template-blog-ghost-ghost-1 Started 
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        3 minutes ago    Up 3 minutes (healthy)    3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.65.0-alpine   "docker-entrypoint.s…"   ghost     12 seconds ago   Up 10 seconds (healthy)   0.0.0.0:2370->2368/tcp
+[2026-10-05T12:36:30Z] restore: OK
+$ curl -sS -o /dev/null -w 'HTTP %{http_code}\n' http://172.18.0.1:2370/template-smoke-2026-10-05t12-35-11z/   (rollback serves the pre-upgrade data again)
+HTTP 200
+
+restore committed compose tag and tear the default project down:
+44:    image: ghost:6.67.0-alpine
+ Volume template-blog-ghost_ghost-content Removed 
+ Network template-blog-ghost_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-05T12:36:38Z] down: OK

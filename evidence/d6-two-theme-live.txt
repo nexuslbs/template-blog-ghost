@@ -1,0 +1,249 @@
+# D6 live: two instances, two themes from the SAME template (2026-10-05)
+# projects template-blog-ghost-a (port 2368, casper) and template-blog-ghost-b (port 2369, source)
+# only the gitignored instances/*/.env differ; no template file edited per instance
+
+========== INSTANCE A ==========
+$ ENV_FILE=instances/a/.env scripts/up.sh
+[2026-10-05T12:23:39Z] starting stack (project template-blog-ghost-a)
+ Network template-blog-ghost-a_ghostnet Creating 
+ Network template-blog-ghost-a_ghostnet Creating 
+ Volume template-blog-ghost-a_ghost-content Creating 
+ Volume template-blog-ghost-a_ghost-content Creating 
+ Volume template-blog-ghost-a_db-data Creating 
+ Volume template-blog-ghost-a_db-data Creating 
+ Volume template-blog-ghost-a_db-data Created 
+ Volume template-blog-ghost-a_db-data Created 
+ Volume template-blog-ghost-a_ghost-content Created 
+ Volume template-blog-ghost-a_ghost-content Created 
+ Network template-blog-ghost-a_ghostnet Created 
+ Network template-blog-ghost-a_ghostnet Created 
+ Container template-blog-ghost-a-db-1 Creating 
+ Container template-blog-ghost-a-db-1 Created 
+ Container template-blog-ghost-a-ghost-1 Creating 
+ Container template-blog-ghost-a-ghost-1 Created 
+ Container template-blog-ghost-a-db-1 Starting 
+ Container template-blog-ghost-a-db-1 Started 
+ Container template-blog-ghost-a-db-1 Waiting 
+ Container template-blog-ghost-a-db-1 Healthy 
+ Container template-blog-ghost-a-ghost-1 Starting 
+ Container template-blog-ghost-a-ghost-1 Started 
+[2026-10-05T12:24:20Z] waiting for db to become healthy
+[2026-10-05T12:24:20Z] waiting for ghost to become healthy (first boot runs DB migrations)
+NAME                            IMAGE                 COMMAND                  SERVICE   CREATED         STATUS                        PORTS
+template-blog-ghost-a-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago   Up 2 minutes (healthy)        3306/tcp, 33060/tcp
+template-blog-ghost-a-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     2 minutes ago   Up About a minute (healthy)   0.0.0.0:2368->2368/tcp
+[2026-10-05T12:26:02Z] up: OK
+[2026-10-05T12:26:09Z] 1/4 site health: GET http://172.18.0.1:2368/ghost/api/admin/site/
+[2026-10-05T12:26:09Z] site health: HTTP 200
+[2026-10-05T12:26:09Z] 2/4 setup owner (unauthenticated, accepted only before setup)
+[2026-10-05T12:26:10Z] setup: HTTP 201
+[2026-10-05T12:26:10Z] 3/4 owner session: POST http://172.18.0.1:2368/ghost/api/admin/session/
+[2026-10-05T12:26:11Z] session: HTTP 201 (cookie stored)
+[2026-10-05T12:26:11Z] 4/4 integration + api keys: POST http://172.18.0.1:2368/ghost/api/admin/integrations/?include=api_keys
+[2026-10-05T12:26:11Z] integration: HTTP 201
+{
+  "integration": "dsh-template-a",
+  "keys": [
+    {
+      "type": "content",
+      "id": "6ac3976359ce300001124636",
+      "secret": "3258a0...REDACTED"
+    },
+    {
+      "type": "admin",
+      "id": "6ac3976359ce300001124638",
+      "secret": "6ac397...REDACTED"
+    }
+  ]
+}
+[2026-10-05T12:26:11Z] wrote /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/instances/a/runtime/admin-api.json (mode 600, gitignored)
+[2026-10-05T12:26:11Z] bootstrap: OK
+[2026-10-05T12:26:11Z] downloading theme casper 5.12.5 from https://github.com/TryGhost/Casper/archive/refs/tags/v5.12.5.zip
+[2026-10-05T12:26:13Z] sha256 verified: 6ac4bf2ab6c023682b611ce056f518a90ea4673b3f6f8900bf8794922b0c8d85
+[2026-10-05T12:26:13Z] repacked theme as casper-5.12.5.zip without symlinks: 405351 bytes
+[2026-10-05T12:26:13Z] uploading theme: POST http://172.18.0.1:2368/ghost/api/admin/themes/upload/
+[2026-10-05T12:26:14Z] upload: HTTP 200
+{
+  "themes": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-05T12:26:14Z] activating theme: PUT http://172.18.0.1:2368/ghost/api/admin/themes/casper-5.12.5/activate/
+[2026-10-05T12:26:14Z] activate: HTTP 200
+{
+  "active": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-05T12:26:14Z] apply: OK
+[2026-10-05T12:26:14Z] 1. site health: GET http://172.18.0.1:2368/ghost/api/admin/site/
+{
+  "title": "Ghost Instance A",
+  "version": "6.67",
+  "url": "http://172.18.0.1:2368/"
+}
+[2026-10-05T12:26:14Z] 2. database ping
+mysqladmin: [Warning] Using a password on the command line interface can be insecure.
+mysqld is alive
+[2026-10-05T12:26:14Z] db: OK
+[2026-10-05T12:26:14Z] 3. setup status
+{
+  "setup": [
+    {
+      "status": true
+    }
+  ]
+}
+[2026-10-05T12:26:14Z] 4. active theme via idempotent activate (integrations may not list themes)
+[2026-10-05T12:26:15Z] activate casper-5.12.5: HTTP 200
+{
+  "active": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-05T12:26:15Z] 5. publish smoke post: POST http://172.18.0.1:2368/ghost/api/admin/posts/?source=html
+posts[0].url = http://172.18.0.1:2368/template-smoke-2026-10-05t12-26-15z/
+GET http://172.18.0.1:2368/template-smoke-2026-10-05t12-26-15z/ -> HTTP 200
+[2026-10-05T12:26:20Z] verify: OK
+
+========== INSTANCE B ==========
+$ ENV_FILE=instances/b/.env scripts/up.sh
+[2026-10-05T12:26:44Z] starting stack (project template-blog-ghost-b)
+ Network template-blog-ghost-b_ghostnet Creating 
+ Volume template-blog-ghost-b_ghost-content Creating 
+ Volume template-blog-ghost-b_ghost-content Creating 
+ Volume template-blog-ghost-b_db-data Creating 
+ Volume template-blog-ghost-b_db-data Creating 
+ Network template-blog-ghost-b_ghostnet Creating 
+ Volume template-blog-ghost-b_ghost-content Created 
+ Volume template-blog-ghost-b_ghost-content Created 
+ Volume template-blog-ghost-b_db-data Created 
+ Volume template-blog-ghost-b_db-data Created 
+ Network template-blog-ghost-b_ghostnet Created 
+ Network template-blog-ghost-b_ghostnet Created 
+ Container template-blog-ghost-b-db-1 Creating 
+ Container template-blog-ghost-b-db-1 Created 
+ Container template-blog-ghost-b-ghost-1 Creating 
+ Container template-blog-ghost-b-ghost-1 Created 
+ Container template-blog-ghost-b-db-1 Starting 
+ Container template-blog-ghost-b-db-1 Started 
+ Container template-blog-ghost-b-db-1 Waiting 
+ Container template-blog-ghost-b-db-1 Healthy 
+ Container template-blog-ghost-b-ghost-1 Starting 
+ Container template-blog-ghost-b-ghost-1 Started 
+[2026-10-05T12:27:15Z] waiting for db to become healthy
+[2026-10-05T12:27:15Z] waiting for ghost to become healthy (first boot runs DB migrations)
+NAME                            IMAGE                 COMMAND                  SERVICE   CREATED              STATUS                        PORTS
+template-blog-ghost-b-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        About a minute ago   Up About a minute (healthy)   3306/tcp, 33060/tcp
+template-blog-ghost-b-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     About a minute ago   Up About a minute (healthy)   0.0.0.0:2369->2368/tcp
+[2026-10-05T12:28:37Z] up: OK
+### instance B lifecycle
+[2026-10-05T12:28:37Z] 1/4 site health: GET http://172.18.0.1:2369/ghost/api/admin/site/
+[2026-10-05T12:28:37Z] site health: HTTP 200
+[2026-10-05T12:28:37Z] 2/4 setup owner (unauthenticated, accepted only before setup)
+[2026-10-05T12:28:38Z] setup: HTTP 201
+[2026-10-05T12:28:38Z] 3/4 owner session: POST http://172.18.0.1:2369/ghost/api/admin/session/
+[2026-10-05T12:28:38Z] session: HTTP 201 (cookie stored)
+[2026-10-05T12:28:39Z] 4/4 integration + api keys: POST http://172.18.0.1:2369/ghost/api/admin/integrations/?include=api_keys
+[2026-10-05T12:28:39Z] integration: HTTP 201
+{
+  "integration": "dsh-template-b",
+  "keys": [
+    {
+      "type": "content",
+      "id": "6ac397f760dccc00015b415b",
+      "secret": "6ab399...REDACTED"
+    },
+    {
+      "type": "admin",
+      "id": "6ac397f760dccc00015b415d",
+      "secret": "6ac397...REDACTED"
+    }
+  ]
+}
+[2026-10-05T12:28:39Z] wrote /opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost/instances/b/runtime/admin-api.json (mode 600, gitignored)
+[2026-10-05T12:28:39Z] bootstrap: OK
+[2026-10-05T12:28:39Z] downloading theme source 1.7.6 from https://github.com/TryGhost/Source/archive/refs/tags/v1.7.6.zip
+[2026-10-05T12:28:41Z] sha256 verified: 7172773c329d8db55995588ea2ee35953b900a3c630042a989dd65767650cb29
+[2026-10-05T12:28:41Z] repacked theme as source-1.7.6.zip without symlinks: 393084 bytes
+[2026-10-05T12:28:41Z] uploading theme: POST http://172.18.0.1:2369/ghost/api/admin/themes/upload/
+[2026-10-05T12:28:42Z] upload: HTTP 200
+{
+  "themes": [
+    "source-1.7.6"
+  ]
+}
+[2026-10-05T12:28:42Z] activating theme: PUT http://172.18.0.1:2369/ghost/api/admin/themes/source-1.7.6/activate/
+[2026-10-05T12:28:43Z] activate: HTTP 200
+{
+  "active": [
+    "source-1.7.6"
+  ]
+}
+[2026-10-05T12:28:43Z] apply: OK
+[2026-10-05T12:28:43Z] 1. site health: GET http://172.18.0.1:2369/ghost/api/admin/site/
+{
+  "title": "Ghost Instance B",
+  "version": "6.67",
+  "url": "http://172.18.0.1:2369/"
+}
+[2026-10-05T12:28:43Z] 2. database ping
+mysqladmin: [Warning] Using a password on the command line interface can be insecure.
+mysqld is alive
+[2026-10-05T12:28:43Z] db: OK
+[2026-10-05T12:28:43Z] 3. setup status
+{
+  "setup": [
+    {
+      "status": true
+    }
+  ]
+}
+[2026-10-05T12:28:43Z] 4. active theme via idempotent activate (integrations may not list themes)
+[2026-10-05T12:28:43Z] activate source-1.7.6: HTTP 200
+{
+  "active": [
+    "source-1.7.6"
+  ]
+}
+[2026-10-05T12:28:43Z] 5. publish smoke post: POST http://172.18.0.1:2369/ghost/api/admin/posts/?source=html
+posts[0].url = http://172.18.0.1:2369/template-smoke-2026-10-05t12-28-43z/
+GET http://172.18.0.1:2369/template-smoke-2026-10-05t12-28-43z/ -> HTTP 200
+[2026-10-05T12:28:49Z] verify: OK
+
+========== A/B PROOF ==========
+### instance B served theme marker (project template-blog-ghost-b, port 2369, GHOST_THEME_NAME=source)
+$ curl -sS http://172.18.0.1:2369/ | grep -oE '/assets/built/[a-zA-Z0-9._-]+' | sort -u
+/assets/built/screen.css
+/assets/built/source.js
+
+$ curl -sS http://172.18.0.1:2369/ | grep -oE '<title>[^<]*</title>|source[^"'"' ]*' | sort -u | head
+<title>Ghost Instance B</title>
+source.js?v=33sa4-qy5thAFPQH
+
+$ curl -sS -o /dev/null -w 'HTTP %{http_code}\n' http://172.18.0.1:2369/
+HTTP 200
+
+### A/B side by side: same template checkout, two projects, two themes
+A: /assets/built/casper.js
+B: /assets/built/source.js
+
+### runtime dirs are separate (no clobber)
+-rw------- 1 root root 1107 Oct  5 12:26 instances/a/runtime/admin-api.json
+-rw------- 1 root root 1107 Oct  5 12:28 instances/b/runtime/admin-api.json
+
+### template tracked files unchanged (only the intended fix + generated, gitignored files)
+ M README.md
+ M config/themes.lock.json
+ M docs/RUNBOOK.md
+ M instances/README.md
+ M instances/a/.env.example
+ M instances/b/.env.example
+ M instances/b/README.md
+ M scripts/lib.sh
+
+$ docker ps --filter name=template-blog-ghost --format '{{.Names}} {{.Ports}}'
+template-blog-ghost-b-ghost-1 0.0.0.0:2369->2368/tcp
+template-blog-ghost-b-db-1 3306/tcp, 33060/tcp
+template-blog-ghost-a-ghost-1 0.0.0.0:2368->2368/tcp
+template-blog-ghost-a-db-1 3306/tcp, 33060/tcp

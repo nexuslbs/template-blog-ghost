@@ -38,6 +38,23 @@ below states exactly what its file shows.
 | `20-restore.txt` | REAL destroy-plus-empty-volume round trip: `down --volumes` (containers + volumes + network removed, `docker ps -a` / `docker volume ls` quoted) -> fresh `up` on empty volumes -> marker post 404 -> `scripts/restore.sh` -> marker post 200. The second section is the documented ROLLBACK `down` (keeps volumes) -> `restore` -> `up`, marker post 200 |
 | `21-teardown.txt` | `git ls-files`, `down --volumes`, and `docker ps` proving the project is gone |
 
+## WAVE 3 live-gate pass (2026-10-05, thread 4080)
+
+Two instances (`template-blog-ghost-a` port 2368, `template-blog-ghost-b` port
+2369) under the default project `template-blog-ghost` (port 2370). Only the
+gitignored `instances/*/.env` differ per instance; no template file is edited to
+render a theme.
+
+| file | gate it captures |
+| --- | --- |
+| `d6-two-theme-live.txt` | TWO-THEME: same checkout, A=casper (`/assets/built/casper.js`) and B=source (`/assets/built/source.js`), each booted, bootstrapped, themed, verified; separate `RUNTIME_DIR` files quoted |
+| `d4-backup-restore-live.txt` | BACKUP/RESTORE: pre-backup post HTTP 200 -> `backup.sh` -> `down --volumes` (volumes gone) -> fresh `up` -> post HTTP 404 -> `restore.sh` -> post HTTP 200 -> `verify.sh` OK |
+| `d5-upgrade-live.txt` | MIGRATE/UPGRADE: real tag bump `ghost:6.65.0-alpine` -> `ghost:6.67.0-alpine`, `migrations` 349 -> 351, boot log `Database state requires migration.` / `Running migrations.`, post 200, then rollback = previous tag + pre-upgrade dump, post 200 again |
+| `d7-plugin-status-live.txt` | PLUGIN status: Ghost has NO plugin system; live container has no `plugins` dir, only `themes`; first-party docs corroborate themes + integrations only |
+| `d8-deploy-live.txt` | DEPLOY: `--help`, remote `--dry-run` (ssh/tar + compose sequence), real `--local` run ending `deploy: OK`; remote leg is contract + dry-run only |
+| `live-gate-teardown.txt` | teardown: every project `down --volumes`; `docker ps` lists only `omni-stack-*`; no ghost volumes left |
+
+
 ## Findings proven by this run
 
 * The published post URL answers HTTP 200 through the public route.

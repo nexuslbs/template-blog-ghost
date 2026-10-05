@@ -1,0 +1,71 @@
+# D8 live: deploy.sh --help / remote --dry-run / --local (AFTER the apply.sh fix)
+# The pre-fix --local failed at verify.sh with HTTP 422 (theme never uploaded);
+# that raw failure is kept in the audit dir as ghost-d8-deploy-pre-fix.txt.
+
+### D8 Ghost deploy entrypoint (AFTER fix: apply.sh added to the deploy sequence)
+date: 2026-10-05T12:40:02Z
+
+$ scripts/deploy.sh --help
+usage: scripts/deploy.sh <user@host> [--dry-run]
+       scripts/deploy.sh --local [--dry-run]
+
+  <user@host>   SSH target that has Docker (checkout streamed over SSH)
+  --local       run against this checkout instead of an SSH target
+  --dry-run     print the exact command sequence and touch nothing
+
+Environment:
+  DEPLOY_DIR    target directory on the remote host (default: ~/<repo name>)
+exit=0
+
+$ scripts/deploy.sh deploy@example.invalid --dry-run
+[deploy@example.invalid] tar -C '/opt/workspace/tmp/template-repos-audit/repos/template-blog-ghost' -czf - --exclude=.git --exclude=.env --exclude=backups --exclude=runtime --exclude=secrets . | ssh -o BatchMode=yes 'deploy@example.invalid' "mkdir -p 'template-blog-ghost' && tar -xzf - -C 'template-blog-ghost'"
+[ssh deploy@example.invalid] if [ ! -f .env ]; then cp .env.example .env; fi; echo "env: .env present"
+[ssh deploy@example.invalid] mkdir -p secrets; if [ ! -s secrets/mysql_root_password.txt ]; then openssl rand -base64 24 > secrets/mysql_root_password.txt; fi; chmod 700 secrets; chmod 444 secrets/mysql_root_password.txt; echo "secret: secrets/mysql_root_password.txt ready"
+[ssh deploy@example.invalid] proj="$(sed -n "s/^COMPOSE_PROJECT_NAME=//p" .env | tail -n1)"; [ -n "$proj" ] || proj="template-blog-ghost"; [ "$proj" != "omni-stack" ] || { echo "refusing to target the protected project omni-stack" >&2; exit 1; }; docker compose --project-name "$proj" --env-file .env -f docker-compose.yml config >/dev/null; echo "config: rendered for project $proj"
+[ssh deploy@example.invalid] scripts/up.sh
+[ssh deploy@example.invalid] scripts/bootstrap.sh
+[ssh deploy@example.invalid] scripts/apply.sh
+[ssh deploy@example.invalid] scripts/migrate.sh
+[ssh deploy@example.invalid] scripts/verify.sh
+[ssh deploy@example.invalid] URL after deploy: http://172.18.0.1:2370
+exit=0
+
+$ scripts/deploy.sh --local   (real dev run: up -> bootstrap -> apply -> migrate -> verify)
+2026-09-29-16-22-08-add-description-to-automations.js	6.67	6.67
+NAME                          IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+template-blog-ghost-db-1      mysql:8.0.44          "docker-entrypoint.s…"   db        2 minutes ago    Up 2 minutes (healthy)    3306/tcp, 33060/tcp
+template-blog-ghost-ghost-1   ghost:6.67.0-alpine   "docker-entrypoint.s…"   ghost     12 seconds ago   Up 10 seconds (healthy)   0.0.0.0:2370->2368/tcp
+[2026-10-05T12:42:10Z] migrate: OK
+[2026-10-05T12:42:10Z] 1. site health: GET http://172.18.0.1:2370/ghost/api/admin/site/
+{
+  "title": "My Ghost Blog",
+  "version": "6.67",
+  "url": "http://172.18.0.1:2370/"
+}
+[2026-10-05T12:42:10Z] 2. database ping
+mysqladmin: [Warning] Using a password on the command line interface can be insecure.
+mysqld is alive
+[2026-10-05T12:42:10Z] db: OK
+[2026-10-05T12:42:10Z] 3. setup status
+{
+  "setup": [
+    {
+      "status": true
+    }
+  ]
+}
+[2026-10-05T12:42:10Z] 4. active theme via idempotent activate (integrations may not list themes)
+[2026-10-05T12:42:11Z] activate casper-5.12.5: HTTP 200
+{
+  "active": [
+    "casper-5.12.5"
+  ]
+}
+[2026-10-05T12:42:11Z] 5. publish smoke post: POST http://172.18.0.1:2370/ghost/api/admin/posts/?source=html
+posts[0].url = http://172.18.0.1:2370/template-smoke-2026-10-05t12-42-11z/
+GET http://172.18.0.1:2370/template-smoke-2026-10-05t12-42-11z/ -> HTTP 200
+[2026-10-05T12:42:17Z] verify: OK
+deploy: OK, URL http://172.18.0.1:2370
+exit=0
+
+remote leg: NO external SSH host exists in this environment; the ssh/tar leg is CONTRACT + --dry-run only. No remote deploy was performed or claimed.

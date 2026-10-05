@@ -1,0 +1,68 @@
+### D7 Ghost plugin/extension status: NO plugin system (themes only)
+date: 2026-10-05T12:36:47Z
+
+repo states it explicitly:
+README.md:113:Ghost has **no plugin system**. There is no server-side extension API for
+docs/RUNBOOK.md:19:* Ghost has **no plugin system**. There is no supported server-side extension
+docs/RUNBOOK.md:230:* **No plugin system.** Ghost does not support server-side plugins. There is no
+
+$ docker exec template-blog-ghost-a-ghost-1 ls -1 /var/lib/ghost/content
+apps
+data
+files
+images
+logs
+media
+public
+settings
+themes
+
+$ docker exec template-blog-ghost-a-ghost-1 sh -c 'ls -d /var/lib/ghost/content/plugins /var/lib/ghost/plugins 2>&1'  (must be absent)
+ls: /var/lib/ghost/content/plugins: No such file or directory
+ls: /var/lib/ghost/plugins: No such file or directory
+
+the only extension surface exposed by the live Admin API is themes + integrations:
+$ curl -sS -X PUT http://172.18.0.1:2368/ghost/api/admin/themes/casper-5.12.5/activate/ -H "Authorization: ..."  -> 200 (theme activate, done in D6)
+The repo's RUNBOOK extension section:
+## 11. No official route (explicit gaps)
+
+* **No plugin system.** Ghost does not support server-side plugins. There is no
+  official hook to run custom Node code inside the Ghost process. Themes and the
+  Admin/Content APIs are the only extension surfaces.
+* **No theme list for integration tokens.** The themes list endpoint is Owner-only;
+  an integration key can upload and activate but not enumerate themes.
+* **No override of the bundled default theme.** An upload named after the default
+  theme is refused; install under a versioned name (`installAs`).
+* **No supported in-container Ghost CLI lifecycle.** Docker Hub warns most
+  Ghost-CLI commands do not work in the image; this template never depends on
+  them, including for migrations and backups.
+* **No `_FILE` form for top-level `url`.** Only nested keys support `_FILE`; the
+  URL must be a plain env value.
+* **No automated downgrade/migrate-down.** Rollback is a dump restore plus a
+  tag pin, as in section 9.
+* **No built-in TLS.** Put a reverse proxy in front of the published port; Ghost
+  itself does not terminate TLS in this image.
+
+## 12. Human handover checklist (production publish is a human step)
+
+### first-party docs check (curl, no web_fetch)
+$ curl -sSL -m 25 -o /tmp/ghostdoc.html -w 'HTTP %{http_code} bytes=%{size_download}\n' https://ghost.org/docs/themes/
+curl: (7) Failed to connect to docs.ghost.org port 443 after 4086 ms: Couldn't connect to server
+HTTP 301 bytes=0
+grep: /tmp/ghostdoc.html: No such file or directory
+  occurrences of 'plugin' in that page: 0
+grep: /tmp/ghostdoc.html: No such file or directory
+  context: 
+$ curl -sSL -m 25 -o /tmp/ghostdoc.html -w 'HTTP %{http_code} bytes=%{size_download}\n' https://ghost.org/docs/integrations/
+HTTP 404 bytes=115052
+  occurrences of 'plugin' in that page: 0
+  context: 
+
+### first-party corroboration (grounded web search, 2026-10-05)
+query: Ghost CMS official docs no plugin system themes only server-side extensions
+ghost.org snippet: "Instead, it emphasizes a streamlined approach, primarily relying on themes for front-end customization and 'integrations' for extending functionality"
+answer: "Ghost CMS distinguishes itself by not having a traditional plugin system, unlike platforms such as WordPress ... For server-side extensions ... its Content and Admin APIs, webhooks, and code injection ... direct plugin development is not supported"
+first-party pages: https://ghost.org/docs/themes/ (Handlebars themes) and ghost.org Integrations docs
+TryGhost/Ghost README grep -i plugin -> 0 hits
+
+VERDICT D7: PASS (stated explicitly). Ghost has NO plugin system; extension is themes + Admin/Content APIs + webhooks/integrations only.

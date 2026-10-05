@@ -65,7 +65,7 @@ Docker and drives the same lifecycle scripts there, non-interactively and
 idempotently:
 
 ```sh
-scripts/deploy.sh deploy@blog-host            # sync + up -> bootstrap -> migrate -> verify
+scripts/deploy.sh deploy@blog-host            # sync + up -> bootstrap -> apply -> migrate -> verify
 scripts/deploy.sh deploy@blog-host --dry-run  # print the exact sequence, touch nothing
 scripts/deploy.sh --local                     # run the same sequence on this checkout
 ```
@@ -118,7 +118,8 @@ takes webhooks or polls the Content API. See `docs/RUNBOOK.md`.
 
 The active theme is selected with `GHOST_THEME_NAME` (an entry in
 `config/themes.lock.json`). `instances/a/` and `instances/b/` hold EXAMPLE envs
-for two stacks with two themes; see `instances/README.md`.
+for two stacks with two themes (shipped lock: `casper` and `source`); see
+`instances/README.md`.
 
 ## Licence
 

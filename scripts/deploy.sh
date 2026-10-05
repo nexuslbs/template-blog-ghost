@@ -9,6 +9,7 @@
 # delegated to this repo's own scripts, in order:
 #   up.sh (docker compose up -d + health)
 #   bootstrap.sh (owner + Admin API integration)
+#   apply.sh (download, upload and activate the pinned theme)
 #   migrate.sh (boot-time migrations)
 #   verify.sh (end-to-end gate)
 # It presupposes only an SSH-reachable machine that has Docker: the checkout is
@@ -112,9 +113,12 @@ run_step 'mkdir -p secrets; if [ ! -s secrets/mysql_root_password.txt ]; then op
 #    compose` on a host that exports COMPOSE_PROJECT_NAME would target it.
 run_step 'proj="$(sed -n "s/^COMPOSE_PROJECT_NAME=//p" .env | tail -n1)"; [ -n "$proj" ] || proj="template-blog-ghost"; [ "$proj" != "omni-stack" ] || { echo "refusing to target the protected project omni-stack" >&2; exit 1; }; docker compose --project-name "$proj" --env-file .env -f docker-compose.yml config >/dev/null; echo "config: rendered for project $proj"'
 
-# 4. Lifecycle: up -> bootstrap -> migrate -> verify, all via existing scripts.
+# 4. Lifecycle: up -> bootstrap -> apply -> migrate -> verify, all via existing
+#    scripts. apply.sh is required: verify.sh activates the pinned theme, so the
+#    deploy aborts with HTTP 422 when the theme was never uploaded.
 run_step 'scripts/up.sh'
 run_step 'scripts/bootstrap.sh'
+run_step 'scripts/apply.sh'
 run_step 'scripts/migrate.sh'
 run_step 'scripts/verify.sh'
 

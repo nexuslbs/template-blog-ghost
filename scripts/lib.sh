@@ -37,6 +37,13 @@ load_env() {
   # re-exported from the file below and pinned with `-p` in compose().
   COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-template-blog-ghost}"
   export COMPOSE_PROJECT_NAME
+  # A relative RUNTIME_DIR from .env (the instances/* examples use one) is
+  # anchored to the repository root, so the scripts behave the same no matter
+  # which directory they are launched from. An absolute value is left untouched.
+  case "${RUNTIME_DIR:-}" in
+    ""|/*) : ;;
+    *) RUNTIME_DIR="$ROOT_DIR/$RUNTIME_DIR"; export RUNTIME_DIR ;;
+  esac
 }
 
 # Every compose call is pinned to this stack's project name. Never run a bare

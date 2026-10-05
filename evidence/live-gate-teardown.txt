@@ -1,0 +1,51 @@
+### Ghost live-gate teardown proof
+date: 2026-10-05T12:42:25Z
+$ ENV_FILE=instances/a/.env scripts/down.sh --volumes
+ Volume template-blog-ghost-a_ghost-content Removed 
+ Volume template-blog-ghost-a_db-data Removed 
+ Network template-blog-ghost-a_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-05T12:42:27Z] down: OK
+
+$ ENV_FILE=instances/b/.env scripts/down.sh --volumes
+ Volume template-blog-ghost-b_ghost-content Removed 
+ Volume template-blog-ghost-b_db-data Removed 
+ Network template-blog-ghost-b_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-05T12:42:29Z] down: OK
+
+$ ENV_FILE=.env scripts/down.sh --volumes
+ Volume template-blog-ghost_db-data Removed 
+ Volume template-blog-ghost_ghost-content Removed 
+ Network template-blog-ghost_ghostnet Removed 
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[2026-10-05T12:42:31Z] down: OK
+
+also down any remaining tmp project directly (never omni-stack):
+
+$ docker ps --format '{{.Names}}'   (only omni-stack-* expected)
+omni-stack-browser-1
+omni-stack-cloudflared-1
+omni-stack-dashboard-1
+omni-stack-grafana-1
+omni-stack-loki-1
+omni-stack-mattermost-1
+omni-stack-mattermost-db-1
+omni-stack-noop-provider-1
+omni-stack-omniagent-1
+omni-stack-postgres-1
+omni-stack-prometheus-1
+omni-stack-toolbox-1
+omni-stack-vector-1
+omni-stack-workbench-1
+omni-stack-workstation-1
+omni-stack-workstation-datasci-1
+omni-stack-workstation-media-1
+omni-stack-workstation-office-1
+omni-stack-workstation-tools-1
+
+non-omni-stack running containers:
+(none)
+
+ghost volumes remaining:
+(none)

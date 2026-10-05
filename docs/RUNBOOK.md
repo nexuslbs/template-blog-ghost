@@ -272,8 +272,8 @@ publish. Record that name in the deployment ticket and tick every item.
 
 `scripts/deploy.sh` streams this checkout to an SSH-reachable host that has
 Docker and runs the lifecycle there. It is non-interactive and idempotent and
-delegates to `scripts/up.sh`, `scripts/bootstrap.sh`, `scripts/migrate.sh` and
-`scripts/verify.sh`:
+delegates to `scripts/up.sh`, `scripts/bootstrap.sh`, `scripts/apply.sh`,
+`scripts/migrate.sh` and `scripts/verify.sh`:
 
 ```sh
 scripts/deploy.sh deploy@blog-host            # sync + deploy
@@ -303,8 +303,11 @@ ENV_FILE=instances/a/.env scripts/apply.sh
 ENV_FILE=instances/a/.env scripts/verify.sh
 ```
 
-The shipped lock declares one theme, `casper`. To render a genuinely different
-theme in instance B, add a second pinned theme to the lock and set
-`GHOST_THEME_NAME` to its name; that edits the manifest, never the template's
-own theme files. See `instances/README.md`. The A/B render itself is asserted
-in the docker run phase; this audit is static and starts no container.
+The shipped lock declares two official themes: `casper` (instance A) and
+`source` (instance B). Instance B names `source`; `scripts/apply.sh` downloads
+the pinned archive, verifies `sha256`, uploads and activates it. That edits no
+theme file and no script: the only per-instance input is the `.env` file. Each
+instance also sets `RUNTIME_DIR` so the Admin API credentials do not clobber
+each other. The rendered theme is asserted by the served page: Casper serves
+`/assets/built/casper.js` and Source serves `/assets/built/source.js`. See
+`instances/README.md`.
