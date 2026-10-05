@@ -232,7 +232,7 @@ B: /assets/built/source.js
 -rw------- 1 root root 1107 Oct  5 12:26 instances/a/runtime/admin-api.json
 -rw------- 1 root root 1107 Oct  5 12:28 instances/b/runtime/admin-api.json
 
-### template tracked files unchanged (only the intended fix + generated, gitignored files)
+### tracked files modified by the intended fix (no per-instance template file edited; instances/*/.env and runtime/ are gitignored)
  M README.md
  M config/themes.lock.json
  M docs/RUNBOOK.md

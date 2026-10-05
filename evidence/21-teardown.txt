@@ -1,6 +1,7 @@
 === git ls-files ===
 .env.example
 .gitignore
+LICENSE
 Makefile
 README.md
 config/config.production.json
@@ -26,10 +27,24 @@ evidence/19-migrate.txt
 evidence/19a-db-version-probe.txt
 evidence/19b-migrations-table.txt
 evidence/20-restore.txt
+evidence/21-teardown.txt
 evidence/README.md
+evidence/d4-backup-restore-live.txt
+evidence/d5-upgrade-live.txt
+evidence/d6-two-theme-live.txt
+evidence/d7-plugin-status-live.txt
+evidence/d8-deploy-live.txt
+evidence/live-gate-teardown.txt
+instances/README.md
+instances/a/.env.example
+instances/a/README.md
+instances/b/.env.example
+instances/b/README.md
+production.env.example
 scripts/apply.sh
 scripts/backup.sh
 scripts/bootstrap.sh
+scripts/deploy.sh
 scripts/down.sh
 scripts/lib.sh
 scripts/logs.sh
@@ -41,6 +56,7 @@ scripts/verify.sh
 === tracked files that must NOT exist ===
 (scan: git ls-files | grep -E '(^|/)\.env$|^secrets/|^runtime/|^backups/|^data/|\.sql$|\.sql\.gz$|\.dump$')
 (none: no .env, no dumps, no secrets, no runtime, no backups, no volume data)
+
 
 === tear down: scripts/down.sh --volumes ===
 [2026-10-03T21:42:07Z] down --volumes (deletes db-data and ghost-content)
