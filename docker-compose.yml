@@ -61,6 +61,15 @@ services:
       # _FILE form (Ghost >= 6.58.0). Do NOT also set the non-_FILE key.
       database__connection__password_FILE: /run/secrets/ghost_db_secret
       mail__transport: ${GHOST_MAIL_TRANSPORT:-Direct}
+      # The SMTP knobs documented in .env.example / production.env.example. They
+      # are inert while GHOST_MAIL_TRANSPORT=Direct and become the active relay
+      # when it is SMTP. GHOST_MAIL_IGNORE_TLS=true skips STARTTLS for a plain
+      # in-cluster relay; leave it false for a TLS terminator.
+      mail__from: ${GHOST_MAIL_FROM:-noreply@example.com}
+      mail__options__host: ${GHOST_MAIL_HOST:-}
+      mail__options__port: ${GHOST_MAIL_PORT:-587}
+      mail__options__secure: ${GHOST_MAIL_SECURE:-false}
+      mail__options__ignoreTLS: ${GHOST_MAIL_IGNORE_TLS:-false}
       logging__transports: '["stdout"]'
     volumes:
       - ghost-content:/var/lib/ghost/content
